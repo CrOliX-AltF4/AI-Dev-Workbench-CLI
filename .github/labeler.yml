@@ -1,0 +1,65 @@
+# Auto-label PRs based on changed files
+
+cli:
+  - changed-files:
+      - any-glob-to-any-file: 'src/cli/**'
+
+ui:
+  - changed-files:
+      - any-glob-to-any-file: 'src/ui/**'
+
+pipeline:
+  - changed-files:
+      - any-glob-to-any-file: 'src/pipeline/**'
+      - any-glob-to-any-file: 'src/orchestrator/**'
+
+agents:
+  - changed-files:
+      - any-glob-to-any-file: 'src/agents/**'
+
+models:
+  - changed-files:
+      - any-glob-to-any-file: 'src/models/**'
+
+providers:
+  - changed-files:
+      - any-glob-to-any-file: 'src/providers/**'
+
+storage:
+  - changed-files:
+      - any-glob-to-any-file: 'src/storage/**'
+
+metrics:
+  - changed-files:
+      - any-glob-to-any-file: 'src/metrics/**'
+
+types:
+  - changed-files:
+      - any-glob-to-any-file: 'src/types/**'
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file: 'tests/**'
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file: '*.md'
+      - any-glob-to-any-file: 'docs/**'
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: '.github/**'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: 'package.json'
+      - any-glob-to-any-file: 'package-lock.json'
+
+tooling:
+  - changed-files:
+      - any-glob-to-any-file: 'tsconfig.json'
+      - any-glob-to-any-file: 'eslint.config.js'
+      - any-glob-to-any-file: '.prettierrc'
+      - any-glob-to-any-file: 'commitlint.config.cjs'
+      - any-glob-to-any-file: 'vitest.config.ts'
+      - any-glob-to-any-file: '.husky/**'

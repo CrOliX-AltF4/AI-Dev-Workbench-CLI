@@ -1,0 +1,36 @@
+# CODEOWNERS — defines who reviews changes to specific areas
+# Syntax: <pattern> <@user or @org/team>
+# Last matching pattern takes precedence.
+#
+# Replace @maintainer and team handles with real GitHub usernames/teams.
+
+# Global fallback — all files require a maintainer review
+* @maintainer
+
+# Core engine — stricter ownership
+src/orchestrator/   @maintainer
+src/pipeline/       @maintainer
+src/agents/         @maintainer
+
+# LLM layer
+src/models/         @maintainer
+src/providers/      @maintainer
+
+# Interface
+src/cli/            @maintainer
+src/ui/             @maintainer
+
+# Infrastructure
+src/storage/        @maintainer
+src/metrics/        @maintainer
+src/types/          @maintainer
+
+# CI/CD and tooling — maintainer must review all workflow changes
+.github/            @maintainer
+.husky/             @maintainer
+package.json        @maintainer
+tsconfig.json       @maintainer
+
+# Documentation — open to all contributors
+*.md                @maintainer
+docs/               @maintainer
