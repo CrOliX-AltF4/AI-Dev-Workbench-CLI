@@ -33,10 +33,17 @@ program
 // ─── config ───────────────────────────────────────────────────────────────────
 
 program
-  .command('config <action> <key> [value]')
-  .description('Get or set configuration values (e.g. provider API keys)')
-  .action((action: string, key: string, value?: string) => {
-    configCommand(action, key, value);
+  .command('config <action> [key] [value]')
+  .description('Manage configuration: get/set/unset <provider>.apiKey, list')
+  .action((action: string, key?: string, value?: string) => {
+    // "list" needs no key; all others require one
+    if (action !== 'list' && !key) {
+      console.error(
+        `Key is required for action "${action}". Example: aiwb config ${action} groq.apiKey`,
+      );
+      process.exit(1);
+    }
+    configCommand(action, key ?? '', value);
   });
 
 // ─── Default: open prompt screen ─────────────────────────────────────────────
