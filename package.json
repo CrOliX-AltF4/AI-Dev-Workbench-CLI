@@ -11,7 +11,7 @@
     "aiwb": "./dist/cli/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "dev": "tsx src/cli/index.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -44,15 +44,23 @@
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
+    "@types/react": "^19.2.14",
     "@vitest/coverage-v8": "^4.1.4",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.0.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "prettier": "^3.0.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0",
     "vitest": "^4.1.4"
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "ink": "^7.0.0",
+    "ink-text-input": "^6.0.0",
+    "react": "^19.2.5"
   }
 }
