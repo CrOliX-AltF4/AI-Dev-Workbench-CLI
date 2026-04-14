@@ -30,6 +30,7 @@ export default tseslint.config(
       'eslint.config.js',
       'commitlint.config.cjs',
       'vitest.config.ts',
+      'tsup.config.ts',
     ],
   },
 );

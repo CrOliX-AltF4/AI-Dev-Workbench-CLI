@@ -35,6 +35,7 @@ export interface PipelineStep {
   taskType: TaskType;
   status: PipelineStepStatus;
   modelId?: string;
+  provider?: ProviderName;
   input?: string;
   output?: string;
   tokensUsed?: number;
