@@ -1,35 +1,35 @@
 # Contributing to AI Dev Workbench CLI
 
-Merci de contribuer ! Ce guide te permettra de démarrer rapidement et de t'assurer que ta contribution s'intègre bien dans le projet.
+Thank you for contributing! This guide will help you get started quickly and ensure your contribution fits smoothly into the project.
 
-## Table des matières
+## Table of contents
 
-- [Code de conduite](#code-de-conduite)
-- [Démarrage rapide](#démarrage-rapide)
-- [Structure du projet](#structure-du-projet)
-- [Workflow de contribution](#workflow-de-contribution)
-- [Conventions de commit](#conventions-de-commit)
-- [Standards de code](#standards-de-code)
+- [Code of conduct](#code-of-conduct)
+- [Quick start](#quick-start)
+- [Project structure](#project-structure)
+- [Contribution workflow](#contribution-workflow)
+- [Commit conventions](#commit-conventions)
+- [Code standards](#code-standards)
 - [Tests](#tests)
-- [Soumettre une PR](#soumettre-une-pr)
+- [Submitting a PR](#submitting-a-pr)
 
 ---
 
-## Code de conduite
+## Code of conduct
 
-Ce projet adhère au [Contributor Covenant](https://www.contributor-covenant.org/). En contribuant, tu acceptes d'en respecter les termes.
+This project adheres to the [Contributor Covenant](https://www.contributor-covenant.org/). By contributing, you agree to abide by its terms.
 
 ---
 
-## Démarrage rapide
+## Quick start
 
-### Prérequis
+### Prerequisites
 
-- **Node.js** ≥ 20 (voir `.nvmrc`)
-- **npm** ≥ 10
+- **Node.js** >= 20 (see `.nvmrc`)
+- **npm** >= 10
 - Git
 
-### Installation
+### Setup
 
 ```bash
 git clone https://github.com/<org>/ai-dev-workbench-cli.git
@@ -37,96 +37,96 @@ cd ai-dev-workbench-cli
 npm install
 ```
 
-Les hooks Git (pre-commit, commit-msg) sont installés automatiquement via Husky lors du `npm install`.
+Git hooks (pre-commit, commit-msg) are installed automatically via Husky on `npm install`.
 
-### Commandes disponibles
+### Available commands
 
-| Commande                | Description                             |
-| ----------------------- | --------------------------------------- |
-| `npm run dev`           | Lancer en mode développement            |
-| `npm run build`         | Compiler TypeScript → `dist/`           |
-| `npm run typecheck`     | Vérification des types sans compilation |
-| `npm run lint`          | ESLint sur tout le projet               |
-| `npm run lint:fix`      | Lint + autofix                          |
-| `npm run format`        | Prettier sur tout le projet             |
-| `npm run format:check`  | Vérification du formatage               |
-| `npm test`              | Lancer les tests une fois               |
-| `npm run test:watch`    | Tests en mode watch                     |
-| `npm run test:coverage` | Tests + rapport de couverture           |
+| Command                 | Description                       |
+| ----------------------- | --------------------------------- |
+| `npm run dev`           | Start in development mode         |
+| `npm run build`         | Compile TypeScript → `dist/`      |
+| `npm run typecheck`     | Type-check without emitting files |
+| `npm run lint`          | Run ESLint across the project     |
+| `npm run lint:fix`      | Lint + autofix                    |
+| `npm run format`        | Run Prettier across the project   |
+| `npm run format:check`  | Check formatting without writing  |
+| `npm test`              | Run tests once                    |
+| `npm run test:watch`    | Run tests in watch mode           |
+| `npm run test:coverage` | Run tests with coverage report    |
 
 ---
 
-## Structure du projet
+## Project structure
 
 ```
 src/
-├── cli/           # Entry points Commander.js
-├── ui/            # Interface TUI (Ink)
-├── orchestrator/  # Orchestrateur central du pipeline
-├── agents/        # Agents stateless : PO · Planner · Dev · QA
+├── cli/           # Commander.js entry points
+├── ui/            # TUI interface (Ink)
+├── orchestrator/  # Central pipeline orchestrator
+├── agents/        # Stateless agents: PO · Planner · Dev · QA
 ├── models/        # Model Recommendation Engine
-├── providers/     # Adaptateurs LLM : Groq · Gemini · Claude · OpenAI
+├── providers/     # LLM adapters: Groq · Gemini · Claude · OpenAI
 ├── pipeline/      # Pipeline Engine + state machine
-├── storage/       # Persistance des runs (JSON → SQLite)
-├── metrics/       # Monitoring : coûts, tokens, latence, système
-└── types/         # Types TypeScript partagés
+├── storage/       # Run persistence (JSON → SQLite)
+├── metrics/       # Monitoring: costs, tokens, latency, system
+└── types/         # Shared TypeScript types
 ```
 
 ---
 
-## Workflow de contribution
+## Contribution workflow
 
-1. **Fork** le repo et crée une branche depuis `dev` :
+1. **Fork** the repo and create a branch from `dev`:
 
    ```bash
-   git checkout -b feat/ma-fonctionnalite dev
+   git checkout -b feat/my-feature dev
    ```
 
-2. **Développe** ta fonctionnalité avec des commits atomiques.
+2. **Develop** your feature with atomic commits.
 
-3. **Assure-toi** que les checks passent localement :
+3. **Make sure** all checks pass locally:
 
    ```bash
    npm run typecheck && npm run lint && npm test && npm run build
    ```
 
-4. **Ouvre une Pull Request** vers `dev` (jamais directement vers `main`).
+4. **Open a Pull Request** targeting `dev` (never directly to `main`).
 
-> `main` = production stable. `dev` = branche d'intégration.
+> `main` = stable production. `dev` = integration branch.
 
 ---
 
-## Conventions de commit
+## Commit conventions
 
-Ce projet utilise [Conventional Commits](https://www.conventionalcommits.org/).
+This project uses [Conventional Commits](https://www.conventionalcommits.org/).
 
 ### Format
 
 ```
-<type>(<scope>): <description courte en minuscules>
+<type>(<scope>): <short description in lowercase>
 
-[corps optionnel]
+[optional body]
 
-[footer optionnel : Closes #123]
+[optional footer: Closes #123]
 ```
 
-### Types acceptés
+### Accepted types
 
-| Type       | Usage                                |
-| ---------- | ------------------------------------ |
-| `feat`     | Nouvelle fonctionnalité              |
-| `fix`      | Correction de bug                    |
-| `docs`     | Documentation uniquement             |
-| `style`    | Formatage, pas de changement logique |
-| `refactor` | Refactoring sans fix ni feat         |
-| `perf`     | Amélioration de performances         |
-| `test`     | Ajout/modification de tests          |
-| `build`    | Outils de build, dépendances         |
-| `ci`       | CI/CD                                |
-| `chore`    | Maintenance, tâches de fond          |
-| `revert`   | Revert d'un commit précédent         |
+| Type       | Usage                           |
+| ---------- | ------------------------------- |
+| `feat`     | New feature                     |
+| `fix`      | Bug fix                         |
+| `docs`     | Documentation only              |
+| `style`    | Formatting, no logic change     |
+| `refactor` | Refactoring without fix or feat |
+| `perf`     | Performance improvement         |
+| `test`     | Adding or updating tests        |
+| `build`    | Build tools, dependencies       |
+| `ci`       | CI/CD                           |
+| `chore`    | Maintenance, background tasks   |
+| `revert`   | Revert a previous commit        |
 
-### Exemples
+### Examples
 
 ```bash
 feat(models): add groq provider adapter
@@ -135,44 +135,44 @@ docs(contributing): add commit conventions section
 test(agents): add unit tests for po agent
 ```
 
-Le hook `commit-msg` valide automatiquement le format. Un commit invalide sera rejeté.
+The `commit-msg` hook validates the format automatically. An invalid commit will be rejected.
 
 ---
 
-## Standards de code
+## Code standards
 
-- **TypeScript strict** : `strict: true`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`
-- **ESLint** : configuration `typescript-eslint/strictTypeChecked` + Prettier
-- **Formatage** : Prettier, single quotes, trailing commas, 100 chars max
-- **Imports** : toujours utiliser `import type` pour les types uniquement
-- **Modules** : ESM natif (`"type": "module"`)
+- **Strict TypeScript**: `strict: true`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`
+- **ESLint**: `typescript-eslint/strictTypeChecked` + Prettier
+- **Formatting**: Prettier, single quotes, trailing commas, 100 chars max
+- **Imports**: always use `import type` for type-only imports
+- **Modules**: native ESM (`"type": "module"`)
 
-Le hook `pre-commit` lance lint-staged automatiquement avant chaque commit.
+The `pre-commit` hook runs lint-staged automatically before each commit.
 
 ---
 
 ## Tests
 
-- Framework : **Vitest**
-- Les tests se trouvent dans `tests/` (mirroring la structure `src/`)
-- Vise une couverture ≥ 80% sur les modules critiques (pipeline, models, providers)
-- Nomme tes fichiers de test `*.test.ts`
+- Framework: **Vitest**
+- Tests live in `tests/` (mirroring the `src/` structure)
+- Aim for >= 80% coverage on critical modules (pipeline, models, providers)
+- Name test files `*.test.ts`
 
 ```bash
-npm run test:coverage   # rapport de couverture complet
-npm run test:watch      # mode watch pendant le développement
+npm run test:coverage   # full coverage report
+npm run test:watch      # watch mode during development
 ```
 
 ---
 
-## Soumettre une PR
+## Submitting a PR
 
-1. Assure-toi que la branche cible est `dev`
-2. Remplis le template de PR
-3. Vérifie que tous les checks CI passent
-4. Demande une review à au moins un mainteneur
-5. Un squash merge sera effectué pour garder un historique propre sur `dev`
+1. Make sure the target branch is `dev`
+2. Fill in the PR template
+3. Verify all CI checks pass
+4. Request a review from at least one maintainer
+5. A squash merge will be performed to keep a clean history on `dev`
 
 ---
 
-Des questions ? Ouvre une [Discussion GitHub](../../discussions) ou une issue avec le label `question`.
+Questions? Open a [GitHub Discussion](../../discussions) or an issue with the `question` label.

@@ -6,4 +6,4 @@
  */
 
 // TODO: Step 2 — wire Commander.js commands + Ink TUI
-console.log('AI Dev Workbench CLI — coming soon 🚀');
+console.log('AI Dev Workbench CLI — coming soon');

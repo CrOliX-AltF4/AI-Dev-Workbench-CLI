@@ -1,49 +1,49 @@
 name: Feature Request
-description: Proposer une nouvelle fonctionnalité
+description: Suggest a new feature
 labels: ['enhancement']
 body:
   - type: markdown
     attributes:
       value: |
-        Tu as une idée pour améliorer AI Dev Workbench CLI ? Super, dis-nous tout !
+        Got an idea to improve AI Dev Workbench CLI? We'd love to hear it!
 
   - type: textarea
     id: problem
     attributes:
-      label: Quel problème veux-tu résoudre ?
-      description: Décris le contexte ou la frustration qui motive cette feature.
-      placeholder: 'Je trouve difficile de... / Il manque...'
+      label: What problem do you want to solve?
+      description: Describe the context or frustration behind this feature request.
+      placeholder: 'I find it difficult to... / There is no way to...'
     validations:
       required: true
 
   - type: textarea
     id: solution
     attributes:
-      label: Solution proposée
-      description: Décris la fonctionnalité que tu envisages.
+      label: Proposed solution
+      description: Describe the feature you have in mind.
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatives envisagées
-      description: Y a-t-il d'autres approches que tu as considérées ?
+      label: Alternatives considered
+      description: Are there other approaches you have thought about?
 
   - type: dropdown
     id: area
     attributes:
-      label: Zone concernée
+      label: Affected area
       options:
         - CLI / Interface
         - Pipeline Engine
         - Agents (PO / Planner / Dev / QA)
         - Model Recommendation Engine
-        - Providers LLM
+        - LLM Providers
         - Storage / Replay
         - Metrics / Monitoring
         - Documentation
         - CI/CD
-        - Autre
+        - Other
     validations:
       required: true

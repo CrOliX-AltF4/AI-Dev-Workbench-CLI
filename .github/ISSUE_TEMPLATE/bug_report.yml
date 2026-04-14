@@ -1,49 +1,49 @@
 name: Bug Report
-description: Signaler un bug
+description: Report a bug
 labels: ['bug', 'triage']
 body:
   - type: markdown
     attributes:
       value: |
-        Merci de prendre le temps de signaler ce bug. Remplis les champs ci-dessous avec le plus de détails possible.
+        Thank you for taking the time to report this bug. Please fill in the fields below with as much detail as possible.
 
   - type: textarea
     id: description
     attributes:
-      label: Description du bug
-      description: Décris clairement ce qui se passe.
-      placeholder: 'Quand je lance `aiwb run`, je reçois...'
+      label: Bug description
+      description: Clearly describe what is happening.
+      placeholder: 'When I run `aiwb run`, I get...'
     validations:
       required: true
 
   - type: textarea
     id: steps
     attributes:
-      label: Étapes pour reproduire
-      description: Comment reproduire le comportement ?
+      label: Steps to reproduce
+      description: How can the behavior be reproduced?
       placeholder: |
-        1. Lancer `aiwb ...`
-        2. Entrer `...`
-        3. Observer l'erreur
+        1. Run `aiwb ...`
+        2. Enter `...`
+        3. Observe the error
     validations:
       required: true
 
   - type: textarea
     id: expected
     attributes:
-      label: Comportement attendu
-      description: Ce qui devrait se passer.
+      label: Expected behavior
+      description: What should happen instead.
     validations:
       required: true
 
   - type: textarea
     id: environment
     attributes:
-      label: Environnement
+      label: Environment
       description: |
-        - OS: [ex. Ubuntu 22.04, macOS 14, Windows 11]
-        - Node.js: [ex. 20.11.0]
-        - Version AIWB: [ex. 0.1.0]
+        - OS: [e.g. Ubuntu 22.04, macOS 14, Windows 11]
+        - Node.js: [e.g. 20.11.0]
+        - AIWB version: [e.g. 0.1.0]
       render: markdown
     validations:
       required: true

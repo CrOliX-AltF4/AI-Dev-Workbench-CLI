@@ -1,12 +1,12 @@
-// ─── Agent Roles ─────────────────────────────────────────────────────────────
+// ─── Agent roles ─────────────────────────────────────────────────────────────
 
 export type AgentRole = 'po' | 'planner' | 'dev' | 'qa';
 
-// ─── LLM Providers ───────────────────────────────────────────────────────────
+// ─── LLM providers ───────────────────────────────────────────────────────────
 
 export type ProviderName = 'groq' | 'gemini' | 'claude' | 'openai';
 
-// ─── Task Types ───────────────────────────────────────────────────────────────
+// ─── Task types ───────────────────────────────────────────────────────────────
 
 export type TaskType = 'clarification' | 'architecture' | 'code' | 'analysis' | 'debug';
 

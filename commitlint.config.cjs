@@ -6,17 +6,17 @@ module.exports = {
       2,
       'always',
       [
-        'feat', // nouvelle fonctionnalité
-        'fix', // correction de bug
-        'docs', // documentation
-        'style', // formatage, pas de changement logique
-        'refactor', // refactoring sans fix ni feat
-        'perf', // amélioration de performances
-        'test', // ajout/modification de tests
-        'build', // outils de build, dépendances
+        'feat', // new feature
+        'fix', // bug fix
+        'docs', // documentation only
+        'style', // formatting, no logic change
+        'refactor', // refactoring without fix or feat
+        'perf', // performance improvement
+        'test', // adding or updating tests
+        'build', // build tools, dependencies
         'ci', // CI/CD
-        'chore', // maintenance, tâches de fond
-        'revert', // revert d'un commit précédent
+        'chore', // maintenance, background tasks
+        'revert', // revert a previous commit
       ],
     ],
     'subject-case': [2, 'always', 'lower-case'],

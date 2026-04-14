@@ -1,28 +1,28 @@
 ## Description
 
-<!-- Décris les changements apportés et pourquoi. -->
+<!-- Describe the changes made and why. -->
 
-## Type de changement
+## Type of change
 
-- [ ] `feat` — nouvelle fonctionnalité
-- [ ] `fix` — correction de bug
-- [ ] `refactor` — refactoring sans nouveau comportement
-- [ ] `docs` — documentation uniquement
-- [ ] `test` — ajout/modification de tests
-- [ ] `build` / `ci` — outillage, CI/CD
+- [ ] `feat` — new feature
+- [ ] `fix` — bug fix
+- [ ] `refactor` — refactoring without behavior change
+- [ ] `docs` — documentation only
+- [ ] `test` — adding or updating tests
+- [ ] `build` / `ci` — tooling, CI/CD
 - [ ] `chore` — maintenance
 
 ## Checklist
 
-- [ ] Mon code respecte les conventions du projet (ESLint + Prettier)
-- [ ] J'ai ajouté/mis à jour les tests nécessaires
-- [ ] `npm run typecheck` passe sans erreur
-- [ ] `npm run test` passe sans erreur
-- [ ] `npm run build` passe sans erreur
-- [ ] J'ai mis à jour la documentation si nécessaire
+- [ ] My code follows the project conventions (ESLint + Prettier)
+- [ ] I have added / updated the necessary tests
+- [ ] `npm run typecheck` passes without errors
+- [ ] `npm run test` passes without errors
+- [ ] `npm run build` passes without errors
+- [ ] I have updated the documentation if needed
 
-## Issues liées
+## Related issues
 
-Closes #<!-- numéro de l'issue -->
+Closes #<!-- issue number -->
 
-## Screenshots / Demo (si applicable)
+## Screenshots / Demo (if applicable)
