@@ -1,0 +1,49 @@
+name: Feature Request
+description: Proposer une nouvelle fonctionnalité
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tu as une idée pour améliorer AI Dev Workbench CLI ? Super, dis-nous tout !
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Quel problème veux-tu résoudre ?
+      description: Décris le contexte ou la frustration qui motive cette feature.
+      placeholder: 'Je trouve difficile de... / Il manque...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution proposée
+      description: Décris la fonctionnalité que tu envisages.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives envisagées
+      description: Y a-t-il d'autres approches que tu as considérées ?
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Zone concernée
+      options:
+        - CLI / Interface
+        - Pipeline Engine
+        - Agents (PO / Planner / Dev / QA)
+        - Model Recommendation Engine
+        - Providers LLM
+        - Storage / Replay
+        - Metrics / Monitoring
+        - Documentation
+        - CI/CD
+        - Autre
+    validations:
+      required: true
