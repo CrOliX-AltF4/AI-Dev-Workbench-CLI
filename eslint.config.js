@@ -7,7 +7,11 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        projectService: {
+          // Route test files (up to 2 dirs deep) to tsconfig.test.json
+          allowDefaultProject: ['tests/*.ts', 'tests/*/*.ts', 'tests/*/*/*.ts'],
+          defaultProject: './tsconfig.test.json',
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
