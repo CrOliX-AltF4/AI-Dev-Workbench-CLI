@@ -9,14 +9,8 @@
   <a href="https://github.com/CrOliX-AltF4/AI-Dev-Workbench-CLI/actions/workflows/ci.yml">
     <img src="https://github.com/CrOliX-AltF4/AI-Dev-Workbench-CLI/actions/workflows/ci.yml/badge.svg" alt="CI" />
   </a>
-  <a href="https://codecov.io/gh/CrOliX-AltF4/AI-Dev-Workbench-CLI">
-    <img src="https://codecov.io/gh/CrOliX-AltF4/AI-Dev-Workbench-CLI/branch/main/graph/badge.svg" alt="Coverage" />
-  </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/github/license/CrOliX-AltF4/AI-Dev-Workbench-CLI?colorA=080f12&colorB=1fa669" alt="MIT License" />
-  </a>
-  <a href="https://www.npmjs.com/package/ai-dev-workbench-cli">
-    <img src="https://img.shields.io/npm/v/ai-dev-workbench-cli?colorA=080f12&colorB=1fa669" alt="npm version" />
   </a>
   <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?colorA=080f12" alt="Node.js >=20" />
   <img src="https://img.shields.io/badge/TypeScript-strict-blue?colorA=080f12" alt="TypeScript strict" />
@@ -90,48 +84,69 @@ Each arrow carries only the **typed slice** the next agent needs — not the ful
 ## Installation
 
 ```bash
-npm install -g ai-dev-workbench-cli
-```
-
-Or run without installing:
-
-```bash
-npx ai-dev-workbench-cli
+git clone https://github.com/CrOliX-AltF4/AI-Dev-Workbench-CLI.git
+cd AI-Dev-Workbench-CLI
+npm install
+npm run build
+npm link          # registers the `aiwb` command globally
 ```
 
 **Requirements:** Node.js >= 20 · At least one LLM provider API key
 
 ---
 
-## Quick start
+## Usage
+
+### Interactive mode (recommended)
 
 ```bash
-# Interactive mode — TUI with prompt screen
 aiwb
+```
 
-# Run a pipeline directly
+Opens the TUI prompt screen. Type your intent and press `Enter` to start the pipeline.
+
+**TUI controls:**
+
+| Key   | Action                                |
+| ----- | ------------------------------------- |
+| `↑ ↓` | Navigate between steps                |
+| `m`   | Change the model for the focused step |
+| `↵`   | Run the pipeline                      |
+| `q`   | Quit                                  |
+
+Once the pipeline completes, the results screen shows:
+
+| Key | Action                                       |
+| --- | -------------------------------------------- |
+| `s` | Save generated files to `./output/<run-id>/` |
+| `r` | Start a new pipeline                         |
+| `q` | Quit                                         |
+
+### CLI commands
+
+```bash
+# Run a pipeline directly (skips the prompt screen)
 aiwb run "create a REST API to manage users"
 
 # Browse past runs
 aiwb history
-```
 
----
-
-## Configuration
-
-```bash
-# Set API keys
-aiwb config set groq.apiKey     <your-key>
-aiwb config set gemini.apiKey   <your-key>
-aiwb config set claude.apiKey   <your-key>
-aiwb config set openai.apiKey   <your-key>
+# Configure a provider API key
+aiwb config set groq.apiKey   <your-key>
+aiwb config set gemini.apiKey <your-key>
+aiwb config set claude.apiKey <your-key>
+aiwb config set openai.apiKey <your-key>
 
 # List current configuration
 aiwb config list
 ```
 
-API keys are stored in `~/.aiwb/config.json`. You only need to configure the providers you want to use — the pipeline adapts to whichever are available.
+### Development mode (no build needed)
+
+```bash
+npm run dev                                    # interactive TUI
+npm run dev -- run "build a CLI to-do list"   # direct intent
+```
 
 ---
 
