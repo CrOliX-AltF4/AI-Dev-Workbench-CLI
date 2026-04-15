@@ -5,7 +5,7 @@ import { Header } from '../components/Header.js';
 import { StepRow } from '../components/StepRow.js';
 import { Footer } from '../components/Footer.js';
 import { MODEL_CATALOG, getDefaultModel } from '../../models/catalog.js';
-import type { PipelineStep, AgentRole, TaskType } from '../../types/index.js';
+import type { PipelineRun, PipelineStep, AgentRole, TaskType } from '../../types/index.js';
 
 // ─── Initial pipeline state ───────────────────────────────────────────────────
 
@@ -103,6 +103,7 @@ function ModelPicker({ role, currentModelId, onSelect, onCancel }: ModelPickerPr
 
 interface PipelineScreenProps {
   intent: string;
+  onComplete?: (run: PipelineRun) => void;
 }
 
 const KEYBINDINGS = [
@@ -112,7 +113,7 @@ const KEYBINDINGS = [
   { key: 'q', label: 'quit' },
 ];
 
-export function PipelineScreen({ intent }: PipelineScreenProps) {
+export function PipelineScreen({ intent, onComplete }: PipelineScreenProps) {
   const app = useApp();
   const [steps, setSteps] = useState<PipelineStep[]>(buildInitialSteps);
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -132,6 +133,9 @@ export function PipelineScreen({ intent }: PipelineScreenProps) {
       void orchestrator
         .run(intent, steps, (updatedStep) => {
           setSteps((prev) => prev.map((s) => (s.id === updatedStep.id ? updatedStep : s)));
+        })
+        .then((run) => {
+          onComplete?.(run);
         })
         .finally(() => {
           setIsRunning(false);
