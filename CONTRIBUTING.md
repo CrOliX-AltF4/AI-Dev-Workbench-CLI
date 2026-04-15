@@ -32,7 +32,7 @@ This project adheres to the [Contributor Covenant](https://www.contributor-coven
 ### Setup
 
 ```bash
-git clone https://github.com/<org>/ai-dev-workbench-cli.git
+git clone https://github.com/CrOliX-AltF4/AI-Dev-Workbench-CLI.git
 cd ai-dev-workbench-cli
 npm install
 ```
