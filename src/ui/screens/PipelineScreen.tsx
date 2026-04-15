@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
+import * as orchestrator from '../../orchestrator/index.js';
 import { Header } from '../components/Header.js';
 import { StepRow } from '../components/StepRow.js';
 import { Footer } from '../components/Footer.js';
@@ -107,7 +108,7 @@ interface PipelineScreenProps {
 const KEYBINDINGS = [
   { key: '↑↓', label: 'navigate' },
   { key: 'm', label: 'change model' },
-  { key: '↵', label: 'start (step 6)' },
+  { key: '↵', label: 'run pipeline' },
   { key: 'q', label: 'quit' },
 ];
 
@@ -116,16 +117,25 @@ export function PipelineScreen({ intent }: PipelineScreenProps) {
   const [steps, setSteps] = useState<PipelineStep[]>(buildInitialSteps);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [showPicker, setShowPicker] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
 
   useInput((input, key) => {
     if (showPicker) return; // handled inside ModelPicker
+    if (isRunning) return; // lock input while pipeline is executing
 
     if (input === 'q') app.exit();
     if (key.upArrow) setFocusedIndex((i) => Math.max(0, i - 1));
     if (key.downArrow) setFocusedIndex((i) => Math.min(steps.length - 1, i + 1));
     if (input === 'm') setShowPicker(true);
     if (key.return) {
-      // TODO: Step 6 — trigger orchestrator.run(intent, steps)
+      setIsRunning(true);
+      void orchestrator
+        .run(intent, steps, (updatedStep) => {
+          setSteps((prev) => prev.map((s) => (s.id === updatedStep.id ? updatedStep : s)));
+        })
+        .finally(() => {
+          setIsRunning(false);
+        });
     }
   });
 
