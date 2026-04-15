@@ -2,16 +2,21 @@ import React, { useState } from 'react';
 import { PromptScreen } from './screens/PromptScreen.js';
 import { PipelineScreen } from './screens/PipelineScreen.js';
 import { ResultsScreen } from './screens/ResultsScreen.js';
+import { SetupScreen } from './screens/SetupScreen.js';
+import { listConfiguredProviders } from '../providers/config.js';
 import type { PipelineRun } from '../types/index.js';
 
-type Screen = 'prompt' | 'pipeline' | 'results';
+type Screen = 'setup' | 'prompt' | 'pipeline' | 'results';
 
 interface AppProps {
   initialIntent?: string;
 }
 
 export function App({ initialIntent }: AppProps) {
-  const [screen, setScreen] = useState<Screen>(initialIntent ? 'pipeline' : 'prompt');
+  const [screen, setScreen] = useState<Screen>(() => {
+    if (listConfiguredProviders().length === 0) return 'setup';
+    return initialIntent ? 'pipeline' : 'prompt';
+  });
   const [intent, setIntent] = useState(initialIntent ?? '');
   const [completedRun, setCompletedRun] = useState<PipelineRun | null>(null);
 
@@ -30,6 +35,16 @@ export function App({ initialIntent }: AppProps) {
     setIntent('');
     setScreen('prompt');
   };
+
+  if (screen === 'setup') {
+    return (
+      <SetupScreen
+        onComplete={() => {
+          setScreen('prompt');
+        }}
+      />
+    );
+  }
 
   if (screen === 'prompt') {
     return <PromptScreen onSubmit={handleIntentSubmit} />;
