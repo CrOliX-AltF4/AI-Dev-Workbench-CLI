@@ -106,16 +106,24 @@ The setup script installs dependencies, builds the project, and registers `aiwb`
 
 ## Usage
 
+On first launch `aiwb` detects that no provider is configured and opens an interactive setup screen automatically. You can also run it explicitly at any time:
+
 ```bash
-# Configure at least one provider first
+aiwb setup
+```
+
+Alternatively, drop a `.env` file in the directory where you run `aiwb`:
+
+```bash
+cp .env.example .env   # then fill in at least one key
+aiwb
+```
+
+Or configure via the CLI directly:
+
+```bash
 aiwb config set groq.apiKey   <your-key>
 aiwb config set gemini.apiKey <your-key>
-aiwb config set claude.apiKey <your-key>
-aiwb config set openai.apiKey <your-key>
-
-# Launch from the folder where you want to work
-cd my-project
-aiwb
 ```
 
 > Generated files are saved to `./output/<run-id>/` relative to the directory where you run `aiwb`.
@@ -124,6 +132,7 @@ aiwb
 
 ```bash
 aiwb                          # interactive TUI (recommended)
+aiwb setup                    # configure API keys interactively
 aiwb run "create a REST API"  # skip the prompt screen
 aiwb history                  # browse past runs
 aiwb config list              # show current configuration

@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 
+// Load .env from the current working directory before anything else.
+// getApiKey() reads process.env, so dotenv vars are picked up automatically.
+import 'dotenv/config';
+
 import { Command } from 'commander';
 import { runCommand } from './commands/run.js';
 import { historyCommand } from './commands/history.js';
+import { setupCommand } from './commands/setup.js';
 import { configCommand } from './commands/config.js';
 
 const program = new Command();
@@ -28,6 +33,15 @@ program
   .description('List previous pipeline runs')
   .action(async () => {
     await historyCommand();
+  });
+
+// ─── setup ────────────────────────────────────────────────────────────────────
+
+program
+  .command('setup')
+  .description('Configure LLM provider API keys interactively')
+  .action(async () => {
+    await setupCommand();
   });
 
 // ─── config ───────────────────────────────────────────────────────────────────
