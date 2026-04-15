@@ -26,8 +26,8 @@ program
 program
   .command('history')
   .description('List previous pipeline runs')
-  .action(() => {
-    historyCommand();
+  .action(async () => {
+    await historyCommand();
   });
 
 // ─── config ───────────────────────────────────────────────────────────────────
