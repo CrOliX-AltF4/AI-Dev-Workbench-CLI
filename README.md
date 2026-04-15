@@ -86,10 +86,19 @@ Each arrow carries only the **typed slice** the next agent needs — not the ful
 ```bash
 git clone https://github.com/CrOliX-AltF4/AI-Dev-Workbench-CLI.git
 cd AI-Dev-Workbench-CLI
-npm install
-npm run build
-npm link          # registers the `aiwb` command globally
 ```
+
+```powershell
+# Windows (PowerShell)
+.\setup.ps1
+```
+
+```bash
+# macOS / Linux
+bash setup.sh
+```
+
+The setup script installs dependencies, builds the project, and registers `aiwb` so it works from any directory. **Restart your terminal after running it.**
 
 **Requirements:** Node.js >= 20 · At least one LLM provider API key
 
@@ -97,15 +106,32 @@ npm link          # registers the `aiwb` command globally
 
 ## Usage
 
-### Interactive mode (recommended)
-
 ```bash
+# Configure at least one provider first
+aiwb config set groq.apiKey   <your-key>
+aiwb config set gemini.apiKey <your-key>
+aiwb config set claude.apiKey <your-key>
+aiwb config set openai.apiKey <your-key>
+
+# Launch from the folder where you want to work
+cd my-project
 aiwb
 ```
 
-Opens the TUI prompt screen. Type your intent and press `Enter` to start the pipeline.
+> Generated files are saved to `./output/<run-id>/` relative to the directory where you run `aiwb`.
 
-**TUI controls:**
+### All commands
+
+```bash
+aiwb                          # interactive TUI (recommended)
+aiwb run "create a REST API"  # skip the prompt screen
+aiwb history                  # browse past runs
+aiwb config list              # show current configuration
+```
+
+### TUI controls
+
+**Pipeline screen** — configure and launch the run:
 
 | Key   | Action                                |
 | ----- | ------------------------------------- |
@@ -114,39 +140,13 @@ Opens the TUI prompt screen. Type your intent and press `Enter` to start the pip
 | `↵`   | Run the pipeline                      |
 | `q`   | Quit                                  |
 
-Once the pipeline completes, the results screen shows:
+**Results screen** — view output and save files:
 
 | Key | Action                                       |
 | --- | -------------------------------------------- |
 | `s` | Save generated files to `./output/<run-id>/` |
 | `r` | Start a new pipeline                         |
 | `q` | Quit                                         |
-
-### CLI commands
-
-```bash
-# Run a pipeline directly (skips the prompt screen)
-aiwb run "create a REST API to manage users"
-
-# Browse past runs
-aiwb history
-
-# Configure a provider API key
-aiwb config set groq.apiKey   <your-key>
-aiwb config set gemini.apiKey <your-key>
-aiwb config set claude.apiKey <your-key>
-aiwb config set openai.apiKey <your-key>
-
-# List current configuration
-aiwb config list
-```
-
-### Development mode (no build needed)
-
-```bash
-npm run dev                                    # interactive TUI
-npm run dev -- run "build a CLI to-do list"   # direct intent
-```
 
 ---
 
