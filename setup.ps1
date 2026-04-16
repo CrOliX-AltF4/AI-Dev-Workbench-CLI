@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 $projectDir = $PSScriptRoot
-$entryPoint = "$projectDir\dist\cli\index.js"
+$entryPoint = "$projectDir\dist\index.js"
 
 Write-Host ""
 Write-Host "AI Dev Workbench CLI — setup"
@@ -36,10 +36,7 @@ if ($profileContent -notmatch "function aiwb") {
 Write-Host ""
 Write-Host "Setup complete. Next steps:"
 Write-Host "  1. Restart your terminal"
-Write-Host "  2. Configure at least one provider:"
-Write-Host "       aiwb config set groq.apiKey   <your-key>"
-Write-Host "       aiwb config set gemini.apiKey <your-key>"
-Write-Host "       aiwb config set claude.apiKey <your-key>"
-Write-Host "       aiwb config set openai.apiKey <your-key>"
-Write-Host "  3. Run: aiwb"
+Write-Host "  2. Run: aiwb"
+Write-Host "     (first launch opens an interactive key setup screen)"
+Write-Host "     Or create a .env file with your API keys — see .env.example"
 Write-Host ""

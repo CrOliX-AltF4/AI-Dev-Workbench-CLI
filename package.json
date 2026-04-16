@@ -8,7 +8,7 @@
     "npm": ">=10.0.0"
   },
   "bin": {
-    "aiwb": "./dist/cli/index.js"
+    "aiwb": "./dist/index.js"
   },
   "scripts": {
     "build": "tsup",
