@@ -2,6 +2,7 @@ import { render } from 'ink';
 import React from 'react';
 import { App } from '../../ui/App.js';
 import { buildDefaultSteps, parseSkipRoles } from '../../pipeline/steps.js';
+import { getModelById } from '../../models/catalog.js';
 import * as orchestrator from '../../orchestrator/index.js';
 import type { AgentRole, PipelineStep } from '../../types/index.js';
 
@@ -20,6 +21,85 @@ interface RunOptions {
   intent?: string;
   json?: boolean;
   skip?: string;
+  dry?: boolean;
+}
+
+// ─── Token estimates per role (medium complexity baseline) ────────────────────
+// Used only for --dry cost preview — not binding for actual runs.
+
+const ROLE_TOKEN_ESTIMATES: Record<AgentRole, { input: number; output: number }> = {
+  po: { input: 800, output: 400 },
+  planner: { input: 1500, output: 1200 },
+  dev: { input: 2500, output: 3500 },
+  qa: { input: 4000, output: 600 },
+};
+
+// ─── Dry run ──────────────────────────────────────────────────────────────────
+
+/**
+ * Prints a cost/model preview without making any LLM call.
+ * Skipped roles are listed but excluded from the total estimate.
+ */
+function dryRun(intent: string | undefined, skipRoles: ReadonlySet<AgentRole>): void {
+  const steps = buildDefaultSteps(skipRoles);
+
+  const header = intent ? `aiwb — dry run for: "${intent}"` : 'aiwb — dry run (no intent given)';
+  process.stdout.write(`\n${header}\n\n`);
+
+  const COL = { role: 16, model: 22, provider: 10, tokens: 16, cost: 10 };
+
+  const pad = (s: string, n: number) => s.padEnd(n);
+
+  process.stdout.write(
+    `  ${pad('Role', COL.role)}${pad('Model', COL.model)}${pad('Provider', COL.provider)}${pad('Est. tokens', COL.tokens)}Est. cost\n`,
+  );
+  process.stdout.write(
+    `  ${'─'.repeat(COL.role + COL.model + COL.provider + COL.tokens + COL.cost)}\n`,
+  );
+
+  let totalCost = 0;
+
+  for (const step of steps) {
+    const label = ROLE_LABELS[step.role] ?? step.role;
+
+    if (step.status === 'skipped') {
+      process.stdout.write(
+        `  ${pad(label, COL.role)}${pad('—', COL.model)}${pad('—', COL.provider)}${'skipped'.padEnd(COL.tokens + COL.cost)}\n`,
+      );
+      continue;
+    }
+
+    const model = step.modelId ? getModelById(step.modelId) : undefined;
+    const est = ROLE_TOKEN_ESTIMATES[step.role];
+    const cost = model
+      ? est.input * model.costPerInputToken + est.output * model.costPerOutputToken
+      : 0;
+    totalCost += cost;
+
+    const tokStr = `~${(est.input + est.output).toLocaleString()} tok`;
+    const costStr = cost < 0.001 ? `~$${(cost * 1000).toFixed(3)}m` : `~$${cost.toFixed(4)}`;
+
+    process.stdout.write(
+      `  ${pad(label, COL.role)}${pad(model?.displayName ?? '?', COL.model)}${pad(model?.provider ?? '?', COL.provider)}${pad(tokStr, COL.tokens)}${costStr}\n`,
+    );
+  }
+
+  process.stdout.write(
+    `  ${'─'.repeat(COL.role + COL.model + COL.provider + COL.tokens + COL.cost)}\n`,
+  );
+
+  const totalStr =
+    totalCost < 0.001 ? `~$${(totalCost * 1000).toFixed(3)}m` : `~$${totalCost.toFixed(4)}`;
+  process.stdout.write(
+    `  ${''.padEnd(COL.role + COL.model + COL.provider + COL.tokens)}Total: ${totalStr}\n`,
+  );
+
+  if (intent) {
+    const skipFlag = skipRoles.size > 0 ? ` --skip ${[...skipRoles].join(',')}` : '';
+    process.stdout.write(`\n  Run with: aiwb run "${intent}"${skipFlag}\n`);
+  }
+
+  process.stdout.write('\n');
 }
 
 // ─── TUI mode ─────────────────────────────────────────────────────────────────
@@ -98,6 +178,11 @@ export async function runCommand(options: RunOptions): Promise<void> {
       process.stderr.write(`${String(err)}\n`);
       process.exit(1);
     }
+  }
+
+  if (options.dry) {
+    dryRun(options.intent, skipRoles);
+    return;
   }
 
   if (options.json) {
