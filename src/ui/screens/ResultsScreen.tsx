@@ -5,7 +5,7 @@ import { join, dirname } from 'node:path';
 import { Header } from '../components/Header.js';
 import { STATUS_COLORS } from '../theme.js';
 import type { PipelineRun, AgentRole } from '../../types/index.js';
-import type { DevOutput, QAOutput, QAIssue } from '../../agents/types.js';
+import type { DevOutput, POOutput, PlannerOutput, QAOutput, QAIssue } from '../../agents/types.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -58,15 +58,103 @@ function IssueRow({ issue }: { issue: QAIssue }) {
   );
 }
 
+// ─── Artifact rendering ───────────────────────────────────────────────────────
+
+function renderRequirements(po: POOutput): string {
+  const lines: string[] = ['# Requirements', ''];
+
+  lines.push('## Goal', po.clarifiedGoal, '');
+
+  if (po.requirements.length > 0) {
+    lines.push('## Requirements');
+    po.requirements.forEach((r) => lines.push(`- ${r}`));
+    lines.push('');
+  }
+
+  if (po.acceptanceCriteria.length > 0) {
+    lines.push('## Acceptance Criteria');
+    po.acceptanceCriteria.forEach((a) => lines.push(`- ${a}`));
+    lines.push('');
+  }
+
+  if (po.constraints.length > 0) {
+    lines.push('## Constraints');
+    po.constraints.forEach((c) => lines.push(`- ${c}`));
+    lines.push('');
+  }
+
+  if (po.assumptions.length > 0) {
+    lines.push('## Assumptions');
+    po.assumptions.forEach((a) => lines.push(`- ${a}`));
+    lines.push('');
+  }
+
+  lines.push(`## Complexity`, po.complexity);
+  return lines.join('\n');
+}
+
+function renderPlan(planner: PlannerOutput): string {
+  const lines: string[] = ['# Architecture Plan', ''];
+
+  lines.push('## Overview', planner.architecture, '');
+
+  if (planner.techStack.length > 0) {
+    lines.push('## Tech Stack');
+    planner.techStack.forEach((t) => lines.push(`- ${t}`));
+    lines.push('');
+  }
+
+  if (planner.tasks.length > 0) {
+    lines.push('## Tasks');
+    planner.tasks.forEach((t, i) => {
+      const deps = t.dependsOn.length > 0 ? ` (depends: ${t.dependsOn.join(', ')})` : '';
+      lines.push(`${String(i + 1)}. [${t.id}] ${t.description}${deps}`);
+    });
+    lines.push('');
+  }
+
+  if (planner.estimatedFiles.length > 0) {
+    lines.push('## Estimated Files');
+    planner.estimatedFiles.forEach((f) => lines.push(`- ${f}`));
+    lines.push('');
+  }
+
+  if (planner.risks.length > 0) {
+    lines.push('## Risks');
+    planner.risks.forEach((r) => lines.push(`- ${r}`));
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
 // ─── File save ────────────────────────────────────────────────────────────────
 
-async function saveFilesToDisk(files: DevOutput['files'], runId: string): Promise<string> {
-  const outputDir = join(process.cwd(), 'output', runId);
-  for (const file of files) {
+async function saveArtifacts(
+  run: PipelineRun,
+  dev: DevOutput,
+  po: POOutput | null,
+  planner: PlannerOutput | null,
+): Promise<string> {
+  const outputDir = join(process.cwd(), 'output', run.id);
+
+  // Code files from Dev agent
+  for (const file of dev.files) {
     const dest = join(outputDir, file.path);
     await mkdir(dirname(dest), { recursive: true });
     await writeFile(dest, file.content, 'utf8');
   }
+
+  await mkdir(outputDir, { recursive: true });
+
+  // Markdown artifacts
+  if (po) {
+    await writeFile(join(outputDir, 'requirements.md'), renderRequirements(po), 'utf8');
+  }
+  if (planner) {
+    await writeFile(join(outputDir, 'plan.md'), renderPlan(planner), 'utf8');
+  }
+
   return outputDir;
 }
 
@@ -84,6 +172,8 @@ export function ResultsScreen({ run, onNewPipeline }: ResultsScreenProps) {
 
   const qa = parseStepOutput(run, 'qa') as QAOutput | null;
   const dev = parseStepOutput(run, 'dev') as DevOutput | null;
+  const po = parseStepOutput(run, 'po') as POOutput | null;
+  const planner = parseStepOutput(run, 'planner') as PlannerOutput | null;
   const criticalIssues = qa?.issues.filter((i) => i.severity === 'critical') ?? [];
   const majorIssues = qa?.issues.filter((i) => i.severity === 'major') ?? [];
 
@@ -92,7 +182,7 @@ export function ResultsScreen({ run, onNewPipeline }: ResultsScreenProps) {
     if (input === 'r') onNewPipeline();
     if (input === 's' && dev && !saving && !savedPath) {
       setSaving(true);
-      void saveFilesToDisk(dev.files, run.id)
+      void saveArtifacts(run, dev, po, planner)
         .then((path) => {
           setSavedPath(path);
         })
@@ -171,7 +261,15 @@ export function ResultsScreen({ run, onNewPipeline }: ResultsScreenProps) {
 
         {/* Save feedback */}
         {saving && <Text color="cyan">Saving files...</Text>}
-        {savedPath && <Text color="green">✓ Files saved to {savedPath}</Text>}
+        {savedPath && (
+          <Box flexDirection="column" gap={0}>
+            <Text color="green">✓ Saved to {savedPath}</Text>
+            <Text color="gray" dimColor>
+              code files{po ? ' · requirements.md' : ''}
+              {planner ? ' · plan.md' : ''}
+            </Text>
+          </Box>
+        )}
       </Box>
 
       {/* Footer */}
