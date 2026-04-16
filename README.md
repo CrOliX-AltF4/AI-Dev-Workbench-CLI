@@ -161,12 +161,12 @@ aiwb config list              # show current configuration
 
 ## Default model strategy
 
-| Role    | Default model        | Rationale                         |
-| ------- | -------------------- | --------------------------------- |
-| PO      | Llama 3.3 70B (Groq) | Fast clarification, cheap         |
-| Planner | Gemini 2.0 Flash     | 1M token context for architecture |
-| Dev     | Claude Sonnet 4.5    | Best code quality                 |
-| QA      | Llama 3.3 70B (Groq) | Fast analysis, cheap              |
+| Role    | Default model        | Rationale                           |
+| ------- | -------------------- | ----------------------------------- |
+| PO      | Llama 3.3 70B (Groq) | Fast clarification, free tier       |
+| Planner | Gemini 2.5 Flash     | 1M context, strong reasoning, cheap |
+| Dev     | Claude Sonnet 4.6    | Best code quality                   |
+| QA      | Llama 3.3 70B (Groq) | Fast analysis, free tier            |
 
 Every model can be changed before running via the TUI model picker (`m` key).
 
