@@ -4,31 +4,9 @@ import * as orchestrator from '../../orchestrator/index.js';
 import { Header } from '../components/Header.js';
 import { StepRow } from '../components/StepRow.js';
 import { Footer } from '../components/Footer.js';
-import { MODEL_CATALOG, getDefaultModel } from '../../models/catalog.js';
-import type { PipelineRun, PipelineStep, AgentRole, TaskType } from '../../types/index.js';
-
-// ─── Initial pipeline state ───────────────────────────────────────────────────
-
-const AGENT_SEQUENCE: Array<{ role: AgentRole; taskType: TaskType }> = [
-  { role: 'po', taskType: 'clarification' },
-  { role: 'planner', taskType: 'architecture' },
-  { role: 'dev', taskType: 'code' },
-  { role: 'qa', taskType: 'analysis' },
-];
-
-function buildInitialSteps(): PipelineStep[] {
-  return AGENT_SEQUENCE.map(({ role, taskType }) => {
-    const model = getDefaultModel(role);
-    return {
-      id: role,
-      role,
-      taskType,
-      status: 'pending',
-      modelId: model.id,
-      provider: model.provider,
-    };
-  });
-}
+import { MODEL_CATALOG } from '../../models/catalog.js';
+import { buildDefaultSteps } from '../../pipeline/steps.js';
+import type { PipelineRun, PipelineStep, AgentRole } from '../../types/index.js';
 
 // ─── Model picker ─────────────────────────────────────────────────────────────
 
@@ -115,7 +93,7 @@ const KEYBINDINGS = [
 
 export function PipelineScreen({ intent, onComplete }: PipelineScreenProps) {
   const app = useApp();
-  const [steps, setSteps] = useState<PipelineStep[]>(buildInitialSteps);
+  const [steps, setSteps] = useState<PipelineStep[]>(buildDefaultSteps);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [showPicker, setShowPicker] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
