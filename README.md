@@ -70,14 +70,20 @@ Each arrow carries only the **typed slice** the next agent needs — not the ful
 
 ## Features
 
-- **Interactive TUI** — pipeline view, live step status, spinner, per-step model picker
+- **Interactive TUI** — pipeline view, live step status, live elapsed timer, per-step model picker
+- **Tabbed results screen** — Overview (QA verdict + metrics) · Files (arrow-key preview) · Plan (architecture + tasks)
 - **Model Recommendation Engine** — scores every model on task-fit, cost, latency, context window, and complexity
 - **4 LLM providers** — Groq · Gemini · Claude · OpenAI, all swappable per step
+- **Retry + backoff** — JSON parse failures trigger a corrective multi-turn retry; rate limits use exponential backoff
 - **Structured JSON output** — agents never produce prose; noise is eliminated at the source
 - **Prompt caching** — system prompts cached automatically on Claude (cost reduction)
 - **Run persistence** — every execution saved to `~/.aiwb/runs/` as JSON
 - **History command** — tabular view of past runs with verdict, cost, tokens
-- **Save generated files** — write Dev output to `./output/<run-id>/` with one keypress
+- **Save generated files** — write Dev + `requirements.md` + `plan.md` to `./output/<run-id>/` with one keypress
+- **Headless mode** (`--json`) — progress to stderr, full `PipelineRun` JSON to stdout; exit 1 on failure
+- **Skip roles** (`--skip`) — bypass any agent (e.g. `--skip po,qa` for external PO/QA integration)
+- **Inject PO output** (`--from-po`) — supply pre-computed PO JSON from a file or stdin; PO agent auto-skipped
+- **Dry run** (`--dry`) — preview models, estimated tokens, and cost without making any LLM call
 
 ---
 
@@ -131,11 +137,21 @@ aiwb config set gemini.apiKey <your-key>
 ### All commands
 
 ```bash
-aiwb                          # interactive TUI (recommended)
-aiwb setup                    # configure API keys interactively
-aiwb run "create a REST API"  # skip the prompt screen
-aiwb history                  # browse past runs
-aiwb config list              # show current configuration
+aiwb                                        # interactive TUI (recommended)
+aiwb setup                                  # configure API keys interactively
+aiwb run "create a REST API"                # skip the prompt screen
+aiwb run "create a REST API" --dry          # preview cost without running
+aiwb run "create a REST API" --skip qa      # bypass the QA agent
+aiwb run "create a REST API" --json         # headless: JSON to stdout, progress to stderr
+aiwb run "create a REST API" --from-po po.json  # inject pre-computed PO output
+aiwb history                                # browse past runs
+aiwb config list                            # show current configuration
+```
+
+**Natsume / external PO+QA integration:**
+
+```bash
+echo '<po-json>' | aiwb run "intent" --skip po,qa --from-po - --json
 ```
 
 ### TUI controls
@@ -149,13 +165,17 @@ aiwb config list              # show current configuration
 | `↵`   | Run the pipeline                      |
 | `q`   | Quit                                  |
 
-**Results screen** — view output and save files:
+**Results screen** — tabs and actions:
 
-| Key | Action                                       |
-| --- | -------------------------------------------- |
-| `s` | Save generated files to `./output/<run-id>/` |
-| `r` | Start a new pipeline                         |
-| `q` | Quit                                         |
+| Key   | Action                                                   |
+| ----- | -------------------------------------------------------- |
+| `1`   | Overview tab — QA verdict, issues, suggestions, metrics  |
+| `2`   | Files tab — generated file list with inline code preview |
+| `3`   | Plan tab — architecture, tech stack, tasks, risks        |
+| `↑ ↓` | Navigate files (Files tab)                               |
+| `s`   | Save all files + `requirements.md` + `plan.md`           |
+| `r`   | Start a new pipeline                                     |
+| `q`   | Quit                                                     |
 
 ---
 
@@ -181,7 +201,7 @@ Every model can be changed before running via the TUI model picker (`m` key).
 | CLI           | Commander.js                                                          |
 | TUI           | Ink (React for terminals)                                             |
 | LLM providers | `@anthropic-ai/sdk` · `@google/generative-ai` · `groq-sdk` · `openai` |
-| Tests         | Vitest · 53 tests                                                     |
+| Tests         | Vitest · 80 tests                                                     |
 | Lint / Format | ESLint v9 + typescript-eslint · Prettier                              |
 | Commits       | Conventional Commits + commitlint                                     |
 | CI            | GitHub Actions                                                        |
