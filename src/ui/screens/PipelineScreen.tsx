@@ -172,7 +172,13 @@ export function PipelineScreen({ intent, onComplete }: PipelineScreenProps) {
         {/* Steps */}
         <Box flexDirection="column" marginTop={1} gap={0}>
           {steps.map((step, i) => (
-            <StepRow key={step.id} step={step} focused={i === focusedIndex} />
+            <StepRow
+              key={step.id}
+              step={step}
+              focused={i === focusedIndex}
+              stepNumber={i + 1}
+              totalSteps={steps.length}
+            />
           ))}
         </Box>
       </Box>
