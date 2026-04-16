@@ -190,6 +190,55 @@ describe('runPipeline() — provider not configured', () => {
   });
 });
 
+// ─── Pre-skipped steps ────────────────────────────────────────────────────────
+
+describe('runPipeline() — pre-skipped steps', () => {
+  it('bypasses a skipped step without calling its agent', async () => {
+    const stepsWithSkip = STEPS.map((s) =>
+      s.role === 'qa' ? { ...s, status: 'skipped' as const } : s,
+    );
+    const run = await runPipeline('Build a CLI', stepsWithSkip);
+
+    expect(mockRunQAAgent).not.toHaveBeenCalled();
+    expect(run.steps.find((s) => s.role === 'qa')?.status).toBe('skipped');
+  });
+
+  it('completes successfully when only QA is skipped', async () => {
+    const stepsWithSkip = STEPS.map((s) =>
+      s.role === 'qa' ? { ...s, status: 'skipped' as const } : s,
+    );
+    const run = await runPipeline('Build a CLI', stepsWithSkip);
+
+    expect(run.status).toBe('completed');
+    expect(run.steps.filter((s) => s.status === 'completed').length).toBe(3);
+  });
+
+  it('emits onUpdate with skipped status for pre-skipped steps', async () => {
+    const stepsWithSkip = STEPS.map((s) =>
+      s.role === 'qa' ? { ...s, status: 'skipped' as const } : s,
+    );
+    const updates: Array<{ role: string; status: string }> = [];
+    await runPipeline('Build a CLI', stepsWithSkip, (s) =>
+      updates.push({ role: s.role, status: s.status }),
+    );
+
+    const qaUpdates = updates.filter((u) => u.role === 'qa');
+    expect(qaUpdates).toHaveLength(1);
+    expect(qaUpdates[0]?.status).toBe('skipped');
+  });
+
+  it('fails downstream agents when a dependency is skipped', async () => {
+    const stepsWithSkip = STEPS.map((s) =>
+      s.role === 'po' ? { ...s, status: 'skipped' as const } : s,
+    );
+    const run = await runPipeline('Build a CLI', stepsWithSkip);
+
+    expect(run.status).toBe('failed');
+    expect(run.steps.find((s) => s.role === 'planner')?.status).toBe('failed');
+    expect(run.steps.find((s) => s.role === 'planner')?.error).toContain('PO output is missing');
+  });
+});
+
 // ─── Agent error ──────────────────────────────────────────────────────────────
 
 describe('runPipeline() — agent throws', () => {

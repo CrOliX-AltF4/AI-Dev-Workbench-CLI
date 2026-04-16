@@ -12,18 +12,42 @@ const AGENT_SEQUENCE: Array<{ role: AgentRole; taskType: TaskType }> = [
 
 /**
  * Builds the default pipeline steps using the catalog's recommended model per role.
+ * Steps whose role is in `skipRoles` are pre-marked as `skipped` — the runner
+ * will bypass them without making any LLM call.
+ *
  * Used by both the TUI (PipelineScreen) and the headless CLI runner.
  */
-export function buildDefaultSteps(): PipelineStep[] {
+export function buildDefaultSteps(skipRoles: ReadonlySet<AgentRole> = new Set()): PipelineStep[] {
   return AGENT_SEQUENCE.map(({ role, taskType }) => {
     const model = getDefaultModel(role);
     return {
       id: role,
       role,
       taskType,
-      status: 'pending',
+      status: skipRoles.has(role) ? 'skipped' : 'pending',
       modelId: model.id,
       provider: model.provider,
     };
   });
+}
+
+// ─── Role parsing ─────────────────────────────────────────────────────────────
+
+const VALID_ROLES = new Set<AgentRole>(['po', 'planner', 'dev', 'qa']);
+
+/**
+ * Parses a comma-separated string of role names into a validated Set<AgentRole>.
+ * Throws with a clear message if any token is not a valid role.
+ *
+ * @example parseSkipRoles('po,qa') // → Set { 'po', 'qa' }
+ */
+export function parseSkipRoles(raw: string): Set<AgentRole> {
+  const tokens = raw.split(',').map((t) => t.trim().toLowerCase());
+  const invalid = tokens.filter((t) => !VALID_ROLES.has(t as AgentRole));
+  if (invalid.length > 0) {
+    throw new Error(
+      `Invalid role(s) in --skip: "${invalid.join('", "')}". Valid roles: po, planner, dev, qa.`,
+    );
+  }
+  return new Set(tokens as AgentRole[]);
 }

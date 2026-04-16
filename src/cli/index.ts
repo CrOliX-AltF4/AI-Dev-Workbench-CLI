@@ -23,8 +23,13 @@ program
   .command('run [intent]')
   .description('Run a development pipeline from a user intent')
   .option('--json', 'headless mode: write JSON result to stdout, progress to stderr')
-  .action(async (intent?: string, opts?: { json?: boolean }) => {
-    await runCommand({ ...(intent ? { intent } : {}), ...(opts?.json ? { json: true } : {}) });
+  .option('--skip <roles>', 'comma-separated roles to skip: po, planner, dev, qa')
+  .action(async (intent?: string, opts?: { json?: boolean; skip?: string }) => {
+    await runCommand({
+      ...(intent ? { intent } : {}),
+      ...(opts?.json ? { json: true } : {}),
+      ...(opts?.skip ? { skip: opts.skip } : {}),
+    });
   });
 
 // ─── history ──────────────────────────────────────────────────────────────────
