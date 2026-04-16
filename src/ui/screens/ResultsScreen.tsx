@@ -7,6 +7,10 @@ import { STATUS_COLORS } from '../theme.js';
 import type { PipelineRun, AgentRole } from '../../types/index.js';
 import type { DevOutput, POOutput, PlannerOutput, QAOutput, QAIssue } from '../../agents/types.js';
 
+// ─── Tab type ─────────────────────────────────────────────────────────────────
+
+type Tab = 'overview' | 'files' | 'plan';
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function parseStepOutput(run: PipelineRun, role: AgentRole): unknown {
@@ -54,6 +58,264 @@ function IssueRow({ issue }: { issue: QAIssue }) {
       <Text color={color}>{tag}</Text>
       <Text color="white">{issue.description}</Text>
       {issue.file && <Text color="gray">({issue.file})</Text>}
+    </Box>
+  );
+}
+
+// ─── Tab bar ─────────────────────────────────────────────────────────────────
+
+const TAB_LABELS: Record<Tab, string> = {
+  overview: 'Overview',
+  files: 'Files',
+  plan: 'Plan',
+};
+
+function TabBar({ active }: { active: Tab }) {
+  const tabs: Tab[] = ['overview', 'files', 'plan'];
+  return (
+    <Box gap={0}>
+      {tabs.map((tab, i) => {
+        const isActive = tab === active;
+        const key = String(i + 1);
+        return (
+          <Box key={tab} paddingX={1}>
+            <Text color={isActive ? 'cyan' : 'gray'} bold={isActive}>
+              [{key}] {TAB_LABELS[tab]}
+            </Text>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
+// ─── Overview tab ─────────────────────────────────────────────────────────────
+
+interface OverviewTabProps {
+  run: PipelineRun;
+  qa: QAOutput | null;
+}
+
+function OverviewTab({ run, qa }: OverviewTabProps) {
+  const criticalIssues = qa?.issues.filter((i) => i.severity === 'critical') ?? [];
+  const majorIssues = qa?.issues.filter((i) => i.severity === 'major') ?? [];
+  const minorIssues = qa?.issues.filter((i) => i.severity === 'minor') ?? [];
+
+  return (
+    <Box flexDirection="column" gap={1}>
+      {/* QA verdict */}
+      {qa ? (
+        <Box flexDirection="column" gap={0}>
+          <Text color="gray" bold>
+            QA verdict
+          </Text>
+          <VerdictBadge verdict={qa.verdict} score={qa.score} />
+          {[...criticalIssues, ...majorIssues, ...minorIssues].map((issue, i) => (
+            <IssueRow key={i} issue={issue} />
+          ))}
+          {qa.issues.length === 0 && (
+            <Text color="gray" dimColor>
+              No issues found
+            </Text>
+          )}
+          {qa.suggestions.length > 0 && (
+            <Box flexDirection="column" gap={0} marginTop={1}>
+              <Text color="gray" bold>
+                Suggestions
+              </Text>
+              {qa.suggestions.map((s, i) => (
+                <Text key={i} color="gray">
+                  · {s}
+                </Text>
+              ))}
+            </Box>
+          )}
+        </Box>
+      ) : (
+        <Text color={STATUS_COLORS.failed}>QA step did not complete</Text>
+      )}
+
+      {/* Summary */}
+      <Box gap={3} marginTop={1}>
+        <Text color="gray">
+          Cost <Text color="white">{formatCost(run.totalCostUsd)}</Text>
+        </Text>
+        <Text color="gray">
+          Tokens <Text color="white">{run.totalTokens.toLocaleString()}</Text>
+        </Text>
+        <Text color="gray">
+          Time <Text color="white">{formatDuration(run.totalDurationMs)}</Text>
+        </Text>
+      </Box>
+    </Box>
+  );
+}
+
+// ─── Files tab ────────────────────────────────────────────────────────────────
+
+// Max content lines shown in the inline preview
+const PREVIEW_LINES = 20;
+
+interface FilesTabProps {
+  dev: DevOutput | null;
+  selectedIndex: number;
+}
+
+function FilesTab({ dev, selectedIndex }: FilesTabProps) {
+  if (!dev || dev.files.length === 0) {
+    return <Text color="gray">No generated files.</Text>;
+  }
+
+  const file = dev.files[selectedIndex];
+
+  return (
+    <Box flexDirection="column" gap={1}>
+      {/* File list */}
+      <Box flexDirection="column" gap={0}>
+        {dev.files.map((f, i) => {
+          const isSelected = i === selectedIndex;
+          return (
+            <Box key={f.path} gap={2}>
+              <Text color={isSelected ? 'cyan' : 'gray'}>{isSelected ? '▶' : ' '}</Text>
+              <Text color={isSelected ? 'white' : 'gray'} bold={isSelected}>
+                {f.path}
+              </Text>
+              {!isSelected && (
+                <Text color="gray" dimColor>
+                  {f.description}
+                </Text>
+              )}
+            </Box>
+          );
+        })}
+      </Box>
+
+      {/* Content preview of selected file */}
+      {file && (
+        <Box
+          flexDirection="column"
+          gap={0}
+          marginTop={1}
+          borderStyle="single"
+          borderColor="gray"
+          paddingX={1}
+        >
+          <Text color="gray" dimColor>
+            {file.description}
+          </Text>
+          {file.content
+            .split('\n')
+            .slice(0, PREVIEW_LINES)
+            .map((line, i) => (
+              <Text key={i} color="white" dimColor={i === PREVIEW_LINES - 1}>
+                {line}
+              </Text>
+            ))}
+          {file.content.split('\n').length > PREVIEW_LINES && (
+            <Text color="gray" dimColor>
+              … {file.content.split('\n').length - PREVIEW_LINES} more lines (save to view full
+              file)
+            </Text>
+          )}
+        </Box>
+      )}
+
+      <Text color="gray" dimColor>
+        ↑↓ navigate files
+      </Text>
+    </Box>
+  );
+}
+
+// ─── Plan tab ─────────────────────────────────────────────────────────────────
+
+interface PlanTabProps {
+  planner: PlannerOutput | null;
+}
+
+function PlanTab({ planner }: PlanTabProps) {
+  if (!planner) {
+    return <Text color="gray">Planner step did not complete.</Text>;
+  }
+
+  return (
+    <Box flexDirection="column" gap={1}>
+      {/* Architecture */}
+      <Box flexDirection="column" gap={0}>
+        <Text color="gray" bold>
+          Architecture
+        </Text>
+        <Text color="white">{planner.architecture}</Text>
+      </Box>
+
+      {/* Tech stack */}
+      {planner.techStack.length > 0 && (
+        <Box flexDirection="column" gap={0}>
+          <Text color="gray" bold>
+            Tech Stack
+          </Text>
+          <Box gap={2} flexWrap="wrap">
+            {planner.techStack.map((t, i) => (
+              <Text key={i} color="cyan">
+                {t}
+              </Text>
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      {/* Tasks */}
+      {planner.tasks.length > 0 && (
+        <Box flexDirection="column" gap={0}>
+          <Text color="gray" bold>
+            Tasks ({planner.tasks.length})
+          </Text>
+          {planner.tasks.map((task, i) => {
+            const deps =
+              task.dependsOn.length > 0 ? (
+                <Text color="gray" dimColor>
+                  {' '}
+                  ← {task.dependsOn.join(', ')}
+                </Text>
+              ) : null;
+            return (
+              <Box key={task.id} gap={1}>
+                <Text color="gray">{String(i + 1)}.</Text>
+                <Text color="white">{task.description}</Text>
+                {deps}
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+
+      {/* Estimated files */}
+      {planner.estimatedFiles.length > 0 && (
+        <Box flexDirection="column" gap={0}>
+          <Text color="gray" bold>
+            Estimated Files
+          </Text>
+          {planner.estimatedFiles.map((f, i) => (
+            <Text key={i} color="gray">
+              · {f}
+            </Text>
+          ))}
+        </Box>
+      )}
+
+      {/* Risks */}
+      {planner.risks.length > 0 && (
+        <Box flexDirection="column" gap={0}>
+          <Text color="gray" bold>
+            Risks
+          </Text>
+          {planner.risks.map((r, i) => (
+            <Text key={i} color="yellow">
+              ⚠ {r}
+            </Text>
+          ))}
+        </Box>
+      )}
     </Box>
   );
 }
@@ -167,6 +429,8 @@ interface ResultsScreenProps {
 
 export function ResultsScreen({ run, onNewPipeline }: ResultsScreenProps) {
   const app = useApp();
+  const [tab, setTab] = useState<Tab>('overview');
+  const [selectedFile, setSelectedFile] = useState(0);
   const [savedPath, setSavedPath] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -174,10 +438,21 @@ export function ResultsScreen({ run, onNewPipeline }: ResultsScreenProps) {
   const dev = parseStepOutput(run, 'dev') as DevOutput | null;
   const po = parseStepOutput(run, 'po') as POOutput | null;
   const planner = parseStepOutput(run, 'planner') as PlannerOutput | null;
-  const criticalIssues = qa?.issues.filter((i) => i.severity === 'critical') ?? [];
-  const majorIssues = qa?.issues.filter((i) => i.severity === 'major') ?? [];
+  const fileCount = dev?.files.length ?? 0;
 
-  useInput((input) => {
+  useInput((input, key) => {
+    // Tab switching
+    if (input === '1') setTab('overview');
+    if (input === '2') setTab('files');
+    if (input === '3') setTab('plan');
+
+    // File navigation (only on files tab)
+    if (tab === 'files') {
+      if (key.upArrow) setSelectedFile((i) => Math.max(0, i - 1));
+      if (key.downArrow) setSelectedFile((i) => Math.min(Math.max(0, fileCount - 1), i + 1));
+    }
+
+    // Actions
     if (input === 'q') app.exit();
     if (input === 'r') onNewPipeline();
     if (input === 's' && dev && !saving && !savedPath) {
@@ -207,56 +482,14 @@ export function ResultsScreen({ run, onNewPipeline }: ResultsScreenProps) {
           </Text>
         </Box>
 
-        {/* QA verdict */}
-        {qa ? (
-          <Box flexDirection="column" gap={0} marginTop={1}>
-            <Text color="gray" bold>
-              QA verdict
-            </Text>
-            <VerdictBadge verdict={qa.verdict} score={qa.score} />
-            {[...criticalIssues, ...majorIssues].map((issue, i) => (
-              <IssueRow key={i} issue={issue} />
-            ))}
-            {qa.issues.length === 0 && (
-              <Text color="gray" dimColor>
-                No issues found
-              </Text>
-            )}
-          </Box>
-        ) : (
-          <Box marginTop={1}>
-            <Text color={STATUS_COLORS.failed}>QA step did not complete</Text>
-          </Box>
-        )}
+        {/* Tab bar */}
+        <TabBar active={tab} />
 
-        {/* Generated files */}
-        {dev && dev.files.length > 0 && (
-          <Box flexDirection="column" gap={0} marginTop={1}>
-            <Text color="gray" bold>
-              Generated files ({dev.files.length})
-            </Text>
-            {dev.files.map((file) => (
-              <Box key={file.path} gap={2}>
-                <Text color="cyan"> {file.path}</Text>
-                <Text color="gray" dimColor>
-                  {file.description}
-                </Text>
-              </Box>
-            ))}
-          </Box>
-        )}
-
-        {/* Summary */}
-        <Box gap={3} marginTop={1}>
-          <Text color="gray">
-            Cost <Text color="white">{formatCost(run.totalCostUsd)}</Text>
-          </Text>
-          <Text color="gray">
-            Tokens <Text color="white">{run.totalTokens.toLocaleString()}</Text>
-          </Text>
-          <Text color="gray">
-            Time <Text color="white">{formatDuration(run.totalDurationMs)}</Text>
-          </Text>
+        {/* Tab content */}
+        <Box flexDirection="column" marginTop={1}>
+          {tab === 'overview' && <OverviewTab run={run} qa={qa} />}
+          {tab === 'files' && <FilesTab dev={dev} selectedIndex={selectedFile} />}
+          {tab === 'plan' && <PlanTab planner={planner} />}
         </Box>
 
         {/* Save feedback */}
@@ -276,11 +509,11 @@ export function ResultsScreen({ run, onNewPipeline }: ResultsScreenProps) {
       <Box gap={3} paddingX={1} marginTop={1}>
         {dev && !savedPath && (
           <Text color="gray">
-            <Text color="cyan">[s]</Text> save files
+            <Text color="cyan">[s]</Text> save
           </Text>
         )}
         <Text color="gray">
-          <Text color="cyan">[r]</Text> new pipeline
+          <Text color="cyan">[r]</Text> new
         </Text>
         <Text color="gray">
           <Text color="cyan">[q]</Text> quit
