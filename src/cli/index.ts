@@ -22,8 +22,9 @@ program
 program
   .command('run [intent]')
   .description('Run a development pipeline from a user intent')
-  .action(async (intent?: string) => {
-    await runCommand(intent ? { intent } : {});
+  .option('--json', 'headless mode: write JSON result to stdout, progress to stderr')
+  .action(async (intent?: string, opts?: { json?: boolean }) => {
+    await runCommand({ ...(intent ? { intent } : {}), ...(opts?.json ? { json: true } : {}) });
   });
 
 // ─── history ──────────────────────────────────────────────────────────────────
