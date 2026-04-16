@@ -18,10 +18,12 @@ interface PipelineContext {
 // ─── Runner ───────────────────────────────────────────────────────────────────
 
 /**
- * Executes the full PO → Planner → Dev → QA pipeline sequentially.
+ * Executes the PO → Planner → Dev → QA pipeline sequentially.
+ * Steps pre-marked as `skipped` (via buildDefaultSteps) are bypassed without
+ * making any LLM call. Their status is preserved and reported via onUpdate.
  *
  * @param intent   Raw user intent string.
- * @param steps    Step configuration from the TUI (role, modelId, provider).
+ * @param steps    Step configuration — roles pre-marked `skipped` are bypassed.
  * @param onUpdate Called after every step status change for live TUI updates.
  */
 export async function runPipeline(
@@ -33,7 +35,8 @@ export async function runPipeline(
     id: randomUUID(),
     createdAt: new Date().toISOString(),
     intent,
-    steps: steps.map((s) => ({ ...s, status: 'pending' })),
+    // Preserve `skipped` status from input; reset everything else to `pending`.
+    steps: steps.map((s) => ({ ...s, status: s.status === 'skipped' ? 'skipped' : 'pending' })),
     totalCostUsd: 0,
     totalTokens: 0,
     totalDurationMs: 0,
@@ -54,6 +57,13 @@ export async function runPipeline(
   for (let i = 0; i < run.steps.length; i++) {
     const step = run.steps[i];
     if (!step) continue;
+
+    // Steps pre-marked as skipped are bypassed — notify and move on.
+    if (step.status === 'skipped') {
+      onUpdate?.(step);
+      continue;
+    }
+
     const providerName = step.provider ?? 'groq';
     const modelId = step.modelId ?? '';
 

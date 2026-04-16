@@ -81,6 +81,7 @@ function ModelPicker({ role, currentModelId, onSelect, onCancel }: ModelPickerPr
 
 interface PipelineScreenProps {
   intent: string;
+  skipRoles?: ReadonlySet<AgentRole>;
   onComplete?: (run: PipelineRun) => void;
 }
 
@@ -91,9 +92,9 @@ const KEYBINDINGS = [
   { key: 'q', label: 'quit' },
 ];
 
-export function PipelineScreen({ intent, onComplete }: PipelineScreenProps) {
+export function PipelineScreen({ intent, skipRoles, onComplete }: PipelineScreenProps) {
   const app = useApp();
-  const [steps, setSteps] = useState<PipelineStep[]>(buildDefaultSteps);
+  const [steps, setSteps] = useState<PipelineStep[]>(() => buildDefaultSteps(skipRoles));
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [showPicker, setShowPicker] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
