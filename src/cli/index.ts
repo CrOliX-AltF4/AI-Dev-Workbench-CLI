@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 
+// Load .env from the current working directory before anything else.
+// getApiKey() reads process.env, so dotenv vars are picked up automatically.
+import 'dotenv/config';
+
 import { Command } from 'commander';
 import { runCommand } from './commands/run.js';
 import { historyCommand } from './commands/history.js';
+import { setupCommand } from './commands/setup.js';
 import { configCommand } from './commands/config.js';
 
 const program = new Command();
@@ -10,16 +15,34 @@ const program = new Command();
 program
   .name('aiwb')
   .description('AI Dev Workbench — AI-powered development orchestration CLI')
-  .version('0.1.0');
+  .version('0.2.0');
 
 // ─── run ──────────────────────────────────────────────────────────────────────
 
 program
   .command('run [intent]')
   .description('Run a development pipeline from a user intent')
-  .action(async (intent?: string) => {
-    await runCommand(intent ? { intent } : {});
-  });
+  .option('--json', 'headless mode: write JSON result to stdout, progress to stderr')
+  .option('--skip <roles>', 'comma-separated roles to skip: po, planner, dev, qa')
+  .option('--dry', 'preview models and estimated cost without running')
+  .option(
+    '--from-po <source>',
+    'inject PO output JSON from a file or stdin ("-"); auto-skips PO agent',
+  )
+  .action(
+    async (
+      intent?: string,
+      opts?: { json?: boolean; skip?: string; dry?: boolean; fromPo?: string },
+    ) => {
+      await runCommand({
+        ...(intent ? { intent } : {}),
+        ...(opts?.json ? { json: true } : {}),
+        ...(opts?.skip ? { skip: opts.skip } : {}),
+        ...(opts?.dry ? { dry: true } : {}),
+        ...(opts?.fromPo ? { fromPo: opts.fromPo } : {}),
+      });
+    },
+  );
 
 // ─── history ──────────────────────────────────────────────────────────────────
 
@@ -28,6 +51,15 @@ program
   .description('List previous pipeline runs')
   .action(async () => {
     await historyCommand();
+  });
+
+// ─── setup ────────────────────────────────────────────────────────────────────
+
+program
+  .command('setup')
+  .description('Configure LLM provider API keys interactively')
+  .action(async () => {
+    await setupCommand();
   });
 
 // ─── config ───────────────────────────────────────────────────────────────────

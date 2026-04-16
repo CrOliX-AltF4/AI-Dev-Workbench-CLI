@@ -4,31 +4,9 @@ import * as orchestrator from '../../orchestrator/index.js';
 import { Header } from '../components/Header.js';
 import { StepRow } from '../components/StepRow.js';
 import { Footer } from '../components/Footer.js';
-import { MODEL_CATALOG, getDefaultModel } from '../../models/catalog.js';
-import type { PipelineRun, PipelineStep, AgentRole, TaskType } from '../../types/index.js';
-
-// ─── Initial pipeline state ───────────────────────────────────────────────────
-
-const AGENT_SEQUENCE: Array<{ role: AgentRole; taskType: TaskType }> = [
-  { role: 'po', taskType: 'clarification' },
-  { role: 'planner', taskType: 'architecture' },
-  { role: 'dev', taskType: 'code' },
-  { role: 'qa', taskType: 'analysis' },
-];
-
-function buildInitialSteps(): PipelineStep[] {
-  return AGENT_SEQUENCE.map(({ role, taskType }) => {
-    const model = getDefaultModel(role);
-    return {
-      id: role,
-      role,
-      taskType,
-      status: 'pending',
-      modelId: model.id,
-      provider: model.provider,
-    };
-  });
-}
+import { MODEL_CATALOG } from '../../models/catalog.js';
+import { buildDefaultSteps } from '../../pipeline/steps.js';
+import type { PipelineRun, PipelineStep, AgentRole } from '../../types/index.js';
 
 // ─── Model picker ─────────────────────────────────────────────────────────────
 
@@ -103,6 +81,7 @@ function ModelPicker({ role, currentModelId, onSelect, onCancel }: ModelPickerPr
 
 interface PipelineScreenProps {
   intent: string;
+  skipRoles?: ReadonlySet<AgentRole>;
   onComplete?: (run: PipelineRun) => void;
 }
 
@@ -113,9 +92,9 @@ const KEYBINDINGS = [
   { key: 'q', label: 'quit' },
 ];
 
-export function PipelineScreen({ intent, onComplete }: PipelineScreenProps) {
+export function PipelineScreen({ intent, skipRoles, onComplete }: PipelineScreenProps) {
   const app = useApp();
-  const [steps, setSteps] = useState<PipelineStep[]>(buildInitialSteps);
+  const [steps, setSteps] = useState<PipelineStep[]>(() => buildDefaultSteps(skipRoles));
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [showPicker, setShowPicker] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
@@ -172,7 +151,13 @@ export function PipelineScreen({ intent, onComplete }: PipelineScreenProps) {
         {/* Steps */}
         <Box flexDirection="column" marginTop={1} gap={0}>
           {steps.map((step, i) => (
-            <StepRow key={step.id} step={step} focused={i === focusedIndex} />
+            <StepRow
+              key={step.id}
+              step={step}
+              focused={i === focusedIndex}
+              stepNumber={i + 1}
+              totalSteps={steps.length}
+            />
           ))}
         </Box>
       </Box>

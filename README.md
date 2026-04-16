@@ -70,14 +70,20 @@ Each arrow carries only the **typed slice** the next agent needs — not the ful
 
 ## Features
 
-- **Interactive TUI** — pipeline view, live step status, spinner, per-step model picker
+- **Interactive TUI** — pipeline view, live step status, live elapsed timer, per-step model picker
+- **Tabbed results screen** — Overview (QA verdict + metrics) · Files (arrow-key preview) · Plan (architecture + tasks)
 - **Model Recommendation Engine** — scores every model on task-fit, cost, latency, context window, and complexity
 - **4 LLM providers** — Groq · Gemini · Claude · OpenAI, all swappable per step
+- **Retry + backoff** — JSON parse failures trigger a corrective multi-turn retry; rate limits use exponential backoff
 - **Structured JSON output** — agents never produce prose; noise is eliminated at the source
 - **Prompt caching** — system prompts cached automatically on Claude (cost reduction)
 - **Run persistence** — every execution saved to `~/.aiwb/runs/` as JSON
 - **History command** — tabular view of past runs with verdict, cost, tokens
-- **Save generated files** — write Dev output to `./output/<run-id>/` with one keypress
+- **Save generated files** — write Dev + `requirements.md` + `plan.md` to `./output/<run-id>/` with one keypress
+- **Headless mode** (`--json`) — progress to stderr, full `PipelineRun` JSON to stdout; exit 1 on failure
+- **Skip roles** (`--skip`) — bypass any agent (e.g. `--skip po,qa` for external PO/QA integration)
+- **Inject PO output** (`--from-po`) — supply pre-computed PO JSON from a file or stdin; PO agent auto-skipped
+- **Dry run** (`--dry`) — preview models, estimated tokens, and cost without making any LLM call
 
 ---
 
@@ -86,10 +92,19 @@ Each arrow carries only the **typed slice** the next agent needs — not the ful
 ```bash
 git clone https://github.com/CrOliX-AltF4/AI-Dev-Workbench-CLI.git
 cd AI-Dev-Workbench-CLI
-npm install
-npm run build
-npm link          # registers the `aiwb` command globally
 ```
+
+```powershell
+# Windows (PowerShell)
+.\setup.ps1
+```
+
+```bash
+# macOS / Linux
+bash setup.sh
+```
+
+The setup script installs dependencies, builds the project, and registers `aiwb` so it works from any directory. **Restart your terminal after running it.**
 
 **Requirements:** Node.js >= 20 · At least one LLM provider API key
 
@@ -97,15 +112,51 @@ npm link          # registers the `aiwb` command globally
 
 ## Usage
 
-### Interactive mode (recommended)
+On first launch `aiwb` detects that no provider is configured and opens an interactive setup screen automatically. You can also run it explicitly at any time:
 
 ```bash
+aiwb setup
+```
+
+Alternatively, drop a `.env` file in the directory where you run `aiwb`:
+
+```bash
+cp .env.example .env   # then fill in at least one key
 aiwb
 ```
 
-Opens the TUI prompt screen. Type your intent and press `Enter` to start the pipeline.
+Or configure via the CLI directly:
 
-**TUI controls:**
+```bash
+aiwb config set groq.apiKey   <your-key>
+aiwb config set gemini.apiKey <your-key>
+```
+
+> Generated files are saved to `./output/<run-id>/` relative to the directory where you run `aiwb`.
+
+### All commands
+
+```bash
+aiwb                                        # interactive TUI (recommended)
+aiwb setup                                  # configure API keys interactively
+aiwb run "create a REST API"                # skip the prompt screen
+aiwb run "create a REST API" --dry          # preview cost without running
+aiwb run "create a REST API" --skip qa      # bypass the QA agent
+aiwb run "create a REST API" --json         # headless: JSON to stdout, progress to stderr
+aiwb run "create a REST API" --from-po po.json  # inject pre-computed PO output
+aiwb history                                # browse past runs
+aiwb config list                            # show current configuration
+```
+
+**Natsume / external PO+QA integration:**
+
+```bash
+echo '<po-json>' | aiwb run "intent" --skip po,qa --from-po - --json
+```
+
+### TUI controls
+
+**Pipeline screen** — configure and launch the run:
 
 | Key   | Action                                |
 | ----- | ------------------------------------- |
@@ -114,50 +165,28 @@ Opens the TUI prompt screen. Type your intent and press `Enter` to start the pip
 | `↵`   | Run the pipeline                      |
 | `q`   | Quit                                  |
 
-Once the pipeline completes, the results screen shows:
+**Results screen** — tabs and actions:
 
-| Key | Action                                       |
-| --- | -------------------------------------------- |
-| `s` | Save generated files to `./output/<run-id>/` |
-| `r` | Start a new pipeline                         |
-| `q` | Quit                                         |
-
-### CLI commands
-
-```bash
-# Run a pipeline directly (skips the prompt screen)
-aiwb run "create a REST API to manage users"
-
-# Browse past runs
-aiwb history
-
-# Configure a provider API key
-aiwb config set groq.apiKey   <your-key>
-aiwb config set gemini.apiKey <your-key>
-aiwb config set claude.apiKey <your-key>
-aiwb config set openai.apiKey <your-key>
-
-# List current configuration
-aiwb config list
-```
-
-### Development mode (no build needed)
-
-```bash
-npm run dev                                    # interactive TUI
-npm run dev -- run "build a CLI to-do list"   # direct intent
-```
+| Key   | Action                                                   |
+| ----- | -------------------------------------------------------- |
+| `1`   | Overview tab — QA verdict, issues, suggestions, metrics  |
+| `2`   | Files tab — generated file list with inline code preview |
+| `3`   | Plan tab — architecture, tech stack, tasks, risks        |
+| `↑ ↓` | Navigate files (Files tab)                               |
+| `s`   | Save all files + `requirements.md` + `plan.md`           |
+| `r`   | Start a new pipeline                                     |
+| `q`   | Quit                                                     |
 
 ---
 
 ## Default model strategy
 
-| Role    | Default model        | Rationale                         |
-| ------- | -------------------- | --------------------------------- |
-| PO      | Llama 3.3 70B (Groq) | Fast clarification, cheap         |
-| Planner | Gemini 2.0 Flash     | 1M token context for architecture |
-| Dev     | Claude Sonnet 4.5    | Best code quality                 |
-| QA      | Llama 3.3 70B (Groq) | Fast analysis, cheap              |
+| Role    | Default model        | Rationale                           |
+| ------- | -------------------- | ----------------------------------- |
+| PO      | Llama 3.3 70B (Groq) | Fast clarification, free tier       |
+| Planner | Gemini 2.5 Flash     | 1M context, strong reasoning, cheap |
+| Dev     | Claude Sonnet 4.6    | Best code quality                   |
+| QA      | Llama 3.3 70B (Groq) | Fast analysis, free tier            |
 
 Every model can be changed before running via the TUI model picker (`m` key).
 
@@ -172,7 +201,7 @@ Every model can be changed before running via the TUI model picker (`m` key).
 | CLI           | Commander.js                                                          |
 | TUI           | Ink (React for terminals)                                             |
 | LLM providers | `@anthropic-ai/sdk` · `@google/generative-ai` · `groq-sdk` · `openai` |
-| Tests         | Vitest · 53 tests                                                     |
+| Tests         | Vitest · 80 tests                                                     |
 | Lint / Format | ESLint v9 + typescript-eslint · Prettier                              |
 | Commits       | Conventional Commits + commitlint                                     |
 | CI            | GitHub Actions                                                        |

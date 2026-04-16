@@ -2,16 +2,22 @@ import React, { useState } from 'react';
 import { PromptScreen } from './screens/PromptScreen.js';
 import { PipelineScreen } from './screens/PipelineScreen.js';
 import { ResultsScreen } from './screens/ResultsScreen.js';
-import type { PipelineRun } from '../types/index.js';
+import { SetupScreen } from './screens/SetupScreen.js';
+import { listConfiguredProviders } from '../providers/config.js';
+import type { AgentRole, PipelineRun } from '../types/index.js';
 
-type Screen = 'prompt' | 'pipeline' | 'results';
+type Screen = 'setup' | 'prompt' | 'pipeline' | 'results';
 
 interface AppProps {
   initialIntent?: string;
+  skipRoles?: ReadonlySet<AgentRole>;
 }
 
-export function App({ initialIntent }: AppProps) {
-  const [screen, setScreen] = useState<Screen>(initialIntent ? 'pipeline' : 'prompt');
+export function App({ initialIntent, skipRoles }: AppProps) {
+  const [screen, setScreen] = useState<Screen>(() => {
+    if (listConfiguredProviders().length === 0) return 'setup';
+    return initialIntent ? 'pipeline' : 'prompt';
+  });
   const [intent, setIntent] = useState(initialIntent ?? '');
   const [completedRun, setCompletedRun] = useState<PipelineRun | null>(null);
 
@@ -31,6 +37,16 @@ export function App({ initialIntent }: AppProps) {
     setScreen('prompt');
   };
 
+  if (screen === 'setup') {
+    return (
+      <SetupScreen
+        onComplete={() => {
+          setScreen('prompt');
+        }}
+      />
+    );
+  }
+
   if (screen === 'prompt') {
     return <PromptScreen onSubmit={handleIntentSubmit} />;
   }
@@ -39,5 +55,11 @@ export function App({ initialIntent }: AppProps) {
     return <ResultsScreen run={completedRun} onNewPipeline={handleNewPipeline} />;
   }
 
-  return <PipelineScreen intent={intent} onComplete={handlePipelineComplete} />;
+  return (
+    <PipelineScreen
+      intent={intent}
+      onComplete={handlePipelineComplete}
+      {...(skipRoles ? { skipRoles } : {})}
+    />
+  );
 }

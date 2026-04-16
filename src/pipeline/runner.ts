@@ -5,6 +5,15 @@ import type { PipelineRun, PipelineStep } from '../types/index.js';
 import type { POOutput, PlannerOutput, DevOutput, QAOutput } from '../agents/types.js';
 import { buildPlannerInput, buildDevInput, buildQAInput } from './mapper.js';
 
+// ─── Pipeline preload ─────────────────────────────────────────────────────────
+// Allows callers to inject agent outputs before the pipeline runs.
+// Used by --from-po: Natsume acts as PO and passes its output directly.
+
+export interface PipelinePreload {
+  /** Pre-computed PO output. Combined with --skip po to bypass the PO agent. */
+  po?: POOutput;
+}
+
 // ─── Internal pipeline context ────────────────────────────────────────────────
 // Carries typed agent outputs across steps without exposing them to other layers.
 
@@ -18,29 +27,34 @@ interface PipelineContext {
 // ─── Runner ───────────────────────────────────────────────────────────────────
 
 /**
- * Executes the full PO → Planner → Dev → QA pipeline sequentially.
+ * Executes the PO → Planner → Dev → QA pipeline sequentially.
+ * Steps pre-marked as `skipped` (via buildDefaultSteps) are bypassed without
+ * making any LLM call. Their status is preserved and reported via onUpdate.
  *
  * @param intent   Raw user intent string.
- * @param steps    Step configuration from the TUI (role, modelId, provider).
+ * @param steps    Step configuration — roles pre-marked `skipped` are bypassed.
  * @param onUpdate Called after every step status change for live TUI updates.
  */
 export async function runPipeline(
   intent: string,
   steps: PipelineStep[],
   onUpdate?: (step: PipelineStep) => void,
+  preload?: PipelinePreload,
 ): Promise<PipelineRun> {
   const run: PipelineRun = {
     id: randomUUID(),
     createdAt: new Date().toISOString(),
     intent,
-    steps: steps.map((s) => ({ ...s, status: 'pending' })),
+    // Preserve `skipped` status from input; reset everything else to `pending`.
+    steps: steps.map((s) => ({ ...s, status: s.status === 'skipped' ? 'skipped' : 'pending' })),
     totalCostUsd: 0,
     totalTokens: 0,
     totalDurationMs: 0,
     status: 'running',
   };
 
-  const ctx: PipelineContext = {};
+  // Seed context with any pre-loaded outputs (e.g. --from-po).
+  const ctx: PipelineContext = { ...(preload?.po ? { po: preload.po } : {}) };
   const wallStart = Date.now();
 
   const patch = (index: number, changes: Partial<PipelineStep>): void => {
@@ -54,6 +68,13 @@ export async function runPipeline(
   for (let i = 0; i < run.steps.length; i++) {
     const step = run.steps[i];
     if (!step) continue;
+
+    // Steps pre-marked as skipped are bypassed — notify and move on.
+    if (step.status === 'skipped') {
+      onUpdate?.(step);
+      continue;
+    }
+
     const providerName = step.provider ?? 'groq';
     const modelId = step.modelId ?? '';
 

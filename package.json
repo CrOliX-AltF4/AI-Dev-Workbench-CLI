@@ -1,6 +1,6 @@
 {
   "name": "ai-dev-workbench-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Open-source AI-powered development orchestration CLI",
   "type": "module",
   "engines": {
@@ -8,7 +8,7 @@
     "npm": ">=10.0.0"
   },
   "bin": {
-    "aiwb": "./dist/cli/index.js"
+    "aiwb": "./dist/index.js"
   },
   "scripts": {
     "build": "tsup",
@@ -61,6 +61,7 @@
     "@anthropic-ai/sdk": "^0.88.0",
     "@google/generative-ai": "^0.24.1",
     "commander": "^14.0.3",
+    "dotenv": "^17.4.2",
     "groq-sdk": "^1.1.2",
     "ink": "^7.0.0",
     "ink-text-input": "^6.0.0",
