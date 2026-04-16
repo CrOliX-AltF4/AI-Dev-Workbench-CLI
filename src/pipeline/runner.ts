@@ -5,6 +5,15 @@ import type { PipelineRun, PipelineStep } from '../types/index.js';
 import type { POOutput, PlannerOutput, DevOutput, QAOutput } from '../agents/types.js';
 import { buildPlannerInput, buildDevInput, buildQAInput } from './mapper.js';
 
+// ─── Pipeline preload ─────────────────────────────────────────────────────────
+// Allows callers to inject agent outputs before the pipeline runs.
+// Used by --from-po: Natsume acts as PO and passes its output directly.
+
+export interface PipelinePreload {
+  /** Pre-computed PO output. Combined with --skip po to bypass the PO agent. */
+  po?: POOutput;
+}
+
 // ─── Internal pipeline context ────────────────────────────────────────────────
 // Carries typed agent outputs across steps without exposing them to other layers.
 
@@ -30,6 +39,7 @@ export async function runPipeline(
   intent: string,
   steps: PipelineStep[],
   onUpdate?: (step: PipelineStep) => void,
+  preload?: PipelinePreload,
 ): Promise<PipelineRun> {
   const run: PipelineRun = {
     id: randomUUID(),
@@ -43,7 +53,8 @@ export async function runPipeline(
     status: 'running',
   };
 
-  const ctx: PipelineContext = {};
+  // Seed context with any pre-loaded outputs (e.g. --from-po).
+  const ctx: PipelineContext = { ...(preload?.po ? { po: preload.po } : {}) };
   const wallStart = Date.now();
 
   const patch = (index: number, changes: Partial<PipelineStep>): void => {

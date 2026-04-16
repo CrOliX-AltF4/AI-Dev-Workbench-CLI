@@ -1,9 +1,11 @@
+import { readFile } from 'node:fs/promises';
 import { render } from 'ink';
 import React from 'react';
 import { App } from '../../ui/App.js';
 import { buildDefaultSteps, parseSkipRoles } from '../../pipeline/steps.js';
 import { getModelById } from '../../models/catalog.js';
 import * as orchestrator from '../../orchestrator/index.js';
+import type { POOutput } from '../../agents/types.js';
 import type { AgentRole, PipelineStep } from '../../types/index.js';
 
 // ─── Shared role labels for progress output ───────────────────────────────────
@@ -22,6 +24,47 @@ interface RunOptions {
   json?: boolean;
   skip?: string;
   dry?: boolean;
+  fromPo?: string;
+}
+
+// ─── PO output loader ─────────────────────────────────────────────────────────
+
+/**
+ * Reads and validates a POOutput from a file path or stdin ('-').
+ * Validates that required fields are present — throws on invalid input.
+ */
+async function loadPoOutput(source: string): Promise<POOutput> {
+  let raw: string;
+  if (source === '-') {
+    const chunks: Buffer[] = [];
+    for await (const chunk of process.stdin) chunks.push(chunk as Buffer);
+    raw = Buffer.concat(chunks).toString('utf8');
+  } else {
+    raw = await readFile(source, 'utf8');
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error(`--from-po: invalid JSON in "${source}"`);
+  }
+
+  const obj = parsed as Record<string, unknown>;
+  const required = [
+    'clarifiedGoal',
+    'requirements',
+    'constraints',
+    'acceptanceCriteria',
+    'complexity',
+    'assumptions',
+  ];
+  const missing = required.filter((k) => !(k in obj));
+  if (missing.length > 0) {
+    throw new Error(`--from-po: missing required field(s): ${missing.join(', ')}`);
+  }
+
+  return parsed as POOutput;
 }
 
 // ─── Token estimates per role (medium complexity baseline) ────────────────────
@@ -121,7 +164,11 @@ async function tuiRun(intent?: string, skipRoles?: ReadonlySet<AgentRole>): Prom
  * Final PipelineRun JSON is written to stdout on completion.
  * Exits with code 1 if the pipeline fails.
  */
-async function headlessRun(intent: string, skipRoles: ReadonlySet<AgentRole>): Promise<void> {
+async function headlessRun(
+  intent: string,
+  skipRoles: ReadonlySet<AgentRole>,
+  poOutput?: POOutput,
+): Promise<void> {
   const steps = buildDefaultSteps(skipRoles);
   const total = steps.length;
 
@@ -153,7 +200,8 @@ async function headlessRun(intent: string, skipRoles: ReadonlySet<AgentRole>): P
     }
   };
 
-  const run = await orchestrator.run(intent, steps, onUpdate);
+  const preload = poOutput ? { po: poOutput } : undefined;
+  const run = await orchestrator.run(intent, steps, onUpdate, preload);
 
   process.stderr.write(
     `\nDone — status: ${run.status} · $${run.totalCostUsd.toFixed(4)} · ${run.totalTokens.toLocaleString()} tok · ${(run.totalDurationMs / 1000).toFixed(1)}s\n`,
@@ -169,7 +217,8 @@ async function headlessRun(intent: string, skipRoles: ReadonlySet<AgentRole>): P
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
 export async function runCommand(options: RunOptions): Promise<void> {
-  let skipRoles: ReadonlySet<AgentRole> = new Set();
+  // ── Resolve skip roles ──────────────────────────────────────────────────────
+  let skipRoles: Set<AgentRole> = new Set();
 
   if (options.skip) {
     try {
@@ -180,11 +229,27 @@ export async function runCommand(options: RunOptions): Promise<void> {
     }
   }
 
+  // ── Load --from-po input ────────────────────────────────────────────────────
+  let poOutput: POOutput | undefined;
+
+  if (options.fromPo) {
+    try {
+      poOutput = await loadPoOutput(options.fromPo);
+    } catch (err) {
+      process.stderr.write(`${String(err)}\n`);
+      process.exit(1);
+    }
+    // Auto-skip PO when its output is provided externally
+    skipRoles.add('po');
+  }
+
+  // ── Dry run ─────────────────────────────────────────────────────────────────
   if (options.dry) {
     dryRun(options.intent, skipRoles);
     return;
   }
 
+  // ── Headless JSON mode ──────────────────────────────────────────────────────
   if (options.json) {
     if (!options.intent) {
       process.stderr.write(
@@ -192,9 +257,10 @@ export async function runCommand(options: RunOptions): Promise<void> {
       );
       process.exit(1);
     }
-    await headlessRun(options.intent, skipRoles);
+    await headlessRun(options.intent, skipRoles, poOutput);
     return;
   }
 
+  // ── TUI mode ────────────────────────────────────────────────────────────────
   await tuiRun(options.intent, skipRoles);
 }

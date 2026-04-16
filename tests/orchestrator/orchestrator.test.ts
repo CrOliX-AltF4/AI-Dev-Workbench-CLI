@@ -50,12 +50,12 @@ describe('orchestrator.run()', () => {
 
   it('forwards intent and steps to runPipeline', async () => {
     await run('Build a CLI', STEPS);
-    expect(mockRunPipeline).toHaveBeenCalledWith('Build a CLI', STEPS, undefined);
+    expect(mockRunPipeline).toHaveBeenCalledWith('Build a CLI', STEPS, undefined, undefined);
   });
 
   it('forwards the onUpdate callback to runPipeline', async () => {
     const onUpdate = vi.fn();
     await run('Build a CLI', STEPS, onUpdate);
-    expect(mockRunPipeline).toHaveBeenCalledWith('Build a CLI', STEPS, onUpdate);
+    expect(mockRunPipeline).toHaveBeenCalledWith('Build a CLI', STEPS, onUpdate, undefined);
   });
 });

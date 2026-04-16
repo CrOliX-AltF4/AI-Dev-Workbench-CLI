@@ -239,6 +239,46 @@ describe('runPipeline() — pre-skipped steps', () => {
   });
 });
 
+// ─── Preload (--from-po) ──────────────────────────────────────────────────────
+
+describe('runPipeline() — preload', () => {
+  it('uses preloaded PO output and skips the PO agent', async () => {
+    const stepsWithSkip = STEPS.map((s) =>
+      s.role === 'po' ? { ...s, status: 'skipped' as const } : s,
+    );
+    const preload = { po: PO_RESULT.output };
+    const run = await runPipeline('Build a CLI', stepsWithSkip, undefined, preload);
+
+    expect(mockRunPOAgent).not.toHaveBeenCalled();
+    expect(mockRunPlannerAgent).toHaveBeenCalledOnce();
+    expect(run.status).toBe('completed');
+  });
+
+  it('passes preloaded PO output to Planner as context', async () => {
+    const stepsWithSkip = STEPS.map((s) =>
+      s.role === 'po' ? { ...s, status: 'skipped' as const } : s,
+    );
+    const preload = { po: PO_RESULT.output };
+    await runPipeline('Build a CLI', stepsWithSkip, undefined, preload);
+
+    // Planner should receive input derived from the preloaded PO output
+    expect(mockRunPlannerAgent).toHaveBeenCalledOnce();
+    const plannerInput = mockRunPlannerAgent.mock.calls[0]?.[0];
+    expect(plannerInput).toBeDefined();
+  });
+
+  it('fails Planner if PO is skipped without preload', async () => {
+    const stepsWithSkip = STEPS.map((s) =>
+      s.role === 'po' ? { ...s, status: 'skipped' as const } : s,
+    );
+    // No preload — ctx.po will be undefined
+    const run = await runPipeline('Build a CLI', stepsWithSkip);
+
+    expect(run.status).toBe('failed');
+    expect(run.steps.find((s) => s.role === 'planner')?.error).toContain('PO output is missing');
+  });
+});
+
 // ─── Agent error ──────────────────────────────────────────────────────────────
 
 describe('runPipeline() — agent throws', () => {

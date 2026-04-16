@@ -25,14 +25,24 @@ program
   .option('--json', 'headless mode: write JSON result to stdout, progress to stderr')
   .option('--skip <roles>', 'comma-separated roles to skip: po, planner, dev, qa')
   .option('--dry', 'preview models and estimated cost without running')
-  .action(async (intent?: string, opts?: { json?: boolean; skip?: string; dry?: boolean }) => {
-    await runCommand({
-      ...(intent ? { intent } : {}),
-      ...(opts?.json ? { json: true } : {}),
-      ...(opts?.skip ? { skip: opts.skip } : {}),
-      ...(opts?.dry ? { dry: true } : {}),
-    });
-  });
+  .option(
+    '--from-po <source>',
+    'inject PO output JSON from a file or stdin ("-"); auto-skips PO agent',
+  )
+  .action(
+    async (
+      intent?: string,
+      opts?: { json?: boolean; skip?: string; dry?: boolean; fromPo?: string },
+    ) => {
+      await runCommand({
+        ...(intent ? { intent } : {}),
+        ...(opts?.json ? { json: true } : {}),
+        ...(opts?.skip ? { skip: opts.skip } : {}),
+        ...(opts?.dry ? { dry: true } : {}),
+        ...(opts?.fromPo ? { fromPo: opts.fromPo } : {}),
+      });
+    },
+  );
 
 // ─── history ──────────────────────────────────────────────────────────────────
 
