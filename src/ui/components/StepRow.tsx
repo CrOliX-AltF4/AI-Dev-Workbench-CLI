@@ -19,9 +19,34 @@ function Spinner() {
   return <Text color="cyan">{SPINNER_FRAMES[frame]}</Text>;
 }
 
+/** Counts elapsed seconds from the moment it becomes active. Resets on deactivation. */
+function ElapsedTimer({ active }: { active: boolean }) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!active) {
+      setElapsed(0);
+      return;
+    }
+    const start = Date.now();
+    const t = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+    return () => {
+      clearInterval(t);
+    };
+  }, [active]);
+
+  if (!active) return null;
+  return <Text color="cyan"> · {elapsed}s</Text>;
+}
+
 interface StepRowProps {
   step: PipelineStep;
   focused: boolean;
+  /** 1-based position in the pipeline (e.g. 2 of 4). */
+  stepNumber: number;
+  totalSteps: number;
 }
 
 function formatDuration(ms: number): string {
@@ -32,7 +57,8 @@ function formatCost(usd: number): string {
   return usd < 0.001 ? `$${(usd * 1000).toFixed(3)}m` : `$${usd.toFixed(4)}`;
 }
 
-export function StepRow({ step, focused }: StepRowProps) {
+export function StepRow({ step, focused, stepNumber, totalSteps }: StepRowProps) {
+  const isRunning = step.status === 'running';
   const iconColor = STATUS_COLORS[step.status];
   const model = step.modelId ? getModelById(step.modelId) : undefined;
   const providerColor = model ? PROVIDER_COLORS[model.provider] : 'gray';
@@ -44,10 +70,17 @@ export function StepRow({ step, focused }: StepRowProps) {
 
       {/* Status icon / spinner */}
       <Box width={2}>
-        {step.status === 'running' ? (
-          <Spinner />
+        {isRunning ? <Spinner /> : <Text color={iconColor}>{STATUS_ICONS[step.status]}</Text>}
+      </Box>
+
+      {/* [N/total] badge — visible only while this step is running */}
+      <Box width={6}>
+        {isRunning ? (
+          <Text color="cyan" bold>
+            [{stepNumber}/{totalSteps}]
+          </Text>
         ) : (
-          <Text color={iconColor}>{STATUS_ICONS[step.status]}</Text>
+          <Text> </Text>
         )}
       </Box>
 
@@ -65,16 +98,19 @@ export function StepRow({ step, focused }: StepRowProps) {
         )}
       </Box>
 
-      {/* Status message */}
-      <Text color={iconColor} dimColor={step.status === 'pending'}>
-        {step.status === 'pending' && 'Waiting'}
-        {step.status === 'running' && 'Running...'}
-        {step.status === 'completed' && 'Done'}
-        {step.status === 'failed' && (step.error ?? 'Failed')}
-        {step.status === 'skipped' && 'Skipped'}
-      </Text>
+      {/* Status message + live elapsed timer */}
+      <Box>
+        <Text color={iconColor} dimColor={step.status === 'pending'}>
+          {step.status === 'pending' && 'Waiting'}
+          {isRunning && 'Running'}
+          {step.status === 'completed' && 'Done'}
+          {step.status === 'failed' && (step.error ?? 'Failed')}
+          {step.status === 'skipped' && 'Skipped'}
+        </Text>
+        <ElapsedTimer active={isRunning} />
+      </Box>
 
-      {/* Metrics */}
+      {/* Final metrics (shown after completion) */}
       {step.durationMs !== undefined && (
         <Text color="gray"> {formatDuration(step.durationMs)}</Text>
       )}
