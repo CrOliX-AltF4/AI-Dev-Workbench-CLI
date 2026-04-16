@@ -24,6 +24,8 @@ export interface AgentMeta {
   cacheCreationTokens: number;
   costUsd: number;
   durationMs: number;
+  /** Number of retries needed (0 = first attempt succeeded). */
+  retries: number;
 }
 
 export interface AgentResult<T> {
