@@ -1,4 +1,5 @@
 import { runPipeline } from '../pipeline/index.js';
+import type { PipelinePreload } from '../pipeline/index.js';
 import { saveRun } from '../storage/index.js';
 import type { PipelineRun, PipelineStep } from '../types/index.js';
 
@@ -10,10 +11,10 @@ export async function run(
   intent: string,
   steps: PipelineStep[],
   onUpdate?: (step: PipelineStep) => void,
+  preload?: PipelinePreload,
 ): Promise<PipelineRun> {
-  const result = await runPipeline(intent, steps, onUpdate);
+  const result = await runPipeline(intent, steps, onUpdate, preload);
   // Persist regardless of success/failure so history shows failed runs too
   await saveRun(result);
-  // TODO(metrics): record run metrics
   return result;
 }
