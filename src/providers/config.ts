@@ -26,17 +26,20 @@ function writeConfig(config: ProviderConfig): void {
 
 // ─── Key resolution ───────────────────────────────────────────────────────────
 
-const ENV_KEYS: Record<ProviderName, string> = {
-  groq: 'GROQ_API_KEY',
-  gemini: 'GOOGLE_API_KEY',
-  claude: 'ANTHROPIC_API_KEY',
-  openai: 'OPENAI_API_KEY',
+const ENV_KEYS: Record<ProviderName, string[]> = {
+  groq: ['GROQ_API_KEY'],
+  // Accept both GEMINI_API_KEY (natsume convention) and GOOGLE_API_KEY
+  gemini: ['GEMINI_API_KEY', 'GOOGLE_API_KEY'],
+  claude: ['ANTHROPIC_API_KEY'],
+  openai: ['OPENAI_API_KEY'],
 };
 
 export function getApiKey(provider: ProviderName): string | undefined {
-  // 1. environment variable takes precedence
-  const fromEnv = process.env[ENV_KEYS[provider]];
-  if (fromEnv) return fromEnv;
+  // 1. environment variables take precedence (first match wins)
+  for (const envVar of ENV_KEYS[provider]) {
+    const fromEnv = process.env[envVar];
+    if (fromEnv) return fromEnv;
+  }
 
   // 2. fall back to persisted config
   const config = readConfig();
