@@ -273,6 +273,10 @@ export function PipelineScreen({
   const [currentIteration, setCurrentIteration] = useState(1);
   const [maxIterations, setMaxIterations] = useState(2);
   const [initiative, setInitiative] = useState<number | undefined>(undefined);
+  const [pendingReview, setPendingReview] = useState<{
+    resolve: (v: 'approve' | 'reject') => void;
+    summary: PlanReviewSummary;
+  } | null>(null);
   const abortCtrlRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -294,6 +298,7 @@ export function PipelineScreen({
 
   useInput((input, key) => {
     if (showPicker) return;
+    if (pendingReview !== null) return; // handled inside PlanReviewPanel
 
     if (isRunning) {
       if (cancelRequested) {
@@ -320,15 +325,11 @@ export function PipelineScreen({
       setIsRunning(true);
       const ctrl = new AbortController();
       abortCtrlRef.current = ctrl;
-      const override =
-        (activeSkillIds?.length ?? 0) > 0 || (activePluginIds?.length ?? 0) > 0
-          ? {
-              ...(activeSkillIds && activeSkillIds.length > 0 ? { skillIds: activeSkillIds } : {}),
-              ...(activePluginIds && activePluginIds.length > 0
-                ? { pluginIds: activePluginIds }
-                : {}),
-            }
-          : undefined;
+      const override: Parameters<typeof orchestrator.run>[4] = {
+        ...(activeSkillIds && activeSkillIds.length > 0 ? { skillIds: activeSkillIds } : {}),
+        ...(activePluginIds && activePluginIds.length > 0 ? { pluginIds: activePluginIds } : {}),
+        onPlanReview,
+      };
       const onUpdate = (updatedStep: PipelineStep) => {
         setSteps((prev) => prev.map((s) => (s.id === updatedStep.id ? updatedStep : s)));
       };
@@ -350,6 +351,7 @@ export function PipelineScreen({
         .finally(() => {
           setIsRunning(false);
           setCancelRequested(false);
+          setPendingReview(null);
           abortCtrlRef.current = null;
         });
     }
@@ -448,6 +450,20 @@ export function PipelineScreen({
             onSelect={handleModelSelect}
             onCancel={() => {
               setShowPicker(false);
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Plan review overlay — shown when Planner completes and awaits human approval */}
+      {pendingReview !== null && (
+        <Box paddingX={1}>
+          <PlanReviewPanel
+            summary={pendingReview.summary}
+            onDecision={(v) => {
+              const resolve = pendingReview.resolve;
+              setPendingReview(null);
+              resolve(v);
             }}
           />
         </Box>
