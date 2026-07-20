@@ -17,8 +17,9 @@ export async function run(
   preload?: PipelinePreload,
   override?: PipelineOverride,
   onEvent?: (event: PipelineEvent) => void,
+  signal?: AbortSignal,
 ): Promise<PipelineRun> {
-  const result = await runPipeline(intent, steps, onUpdate, preload, override, onEvent);
+  const result = await runPipeline(intent, steps, onUpdate, preload, override, onEvent, signal);
 
   if (result.status === 'failed') {
     const poStep = result.steps.find((s) => s.role === 'po' && s.status === 'completed');

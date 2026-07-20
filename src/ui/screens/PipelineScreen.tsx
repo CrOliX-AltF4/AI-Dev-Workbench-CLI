@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import * as orchestrator from '../../orchestrator/index.js';
 import { runDemoPipeline } from '../../pipeline/demo.js';
@@ -238,23 +238,27 @@ interface PipelineScreenProps {
   intent: string;
   skipRoles?: ReadonlySet<AgentRole>;
   onComplete?: (run: PipelineRun) => void;
+  onBack?: () => void;
   activeSkillIds?: string[];
   activePluginIds?: string[];
   onStepsChange?: OnStepsChange;
   isDemo?: boolean;
 }
 
-const KEYBINDINGS = [
+const KEYBINDINGS_IDLE = [
   { key: '↑↓', label: 'navigate' },
   { key: 'm', label: 'swap rune' },
   { key: '↵', label: 'fire the forge' },
-  { key: 'q', label: 'abandon' },
+  { key: 'q', label: 'back' },
 ];
+
+const KEYBINDINGS_RUNNING = [{ key: 'q', label: 'abort' }];
 
 export function PipelineScreen({
   intent,
   skipRoles,
   onComplete,
+  onBack,
   activeSkillIds,
   activePluginIds,
   onStepsChange,
@@ -265,6 +269,7 @@ export function PipelineScreen({
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [showPicker, setShowPicker] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [cancelRequested, setCancelRequested] = useState(false);
   const [currentIteration, setCurrentIteration] = useState(1);
   const [maxIterations, setMaxIterations] = useState(2);
   const [initiative, setInitiative] = useState<number | undefined>(undefined);
@@ -272,6 +277,7 @@ export function PipelineScreen({
     resolve: (v: 'approve' | 'reject') => void;
     summary: PlanReviewSummary;
   } | null>(null);
+  const abortCtrlRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     onStepsChange?.(steps);
@@ -291,17 +297,34 @@ export function PipelineScreen({
     });
 
   useInput((input, key) => {
-    if (showPicker) return; // handled inside ModelPicker
+    if (showPicker) return;
     if (pendingReview !== null) return; // handled inside PlanReviewPanel
-    if (isRunning) return; // lock input while pipeline is executing
 
-    if (input === 'q') app.exit();
+    if (isRunning) {
+      if (cancelRequested) {
+        if (input === 'q') {
+          abortCtrlRef.current?.abort();
+          setCancelRequested(false);
+        }
+        if (key.escape) setCancelRequested(false);
+      } else {
+        if (input === 'q') setCancelRequested(true);
+      }
+      return;
+    }
+
+    if (input === 'q') {
+      if (onBack) onBack();
+      else app.exit();
+    }
     if (key.upArrow) setFocusedIndex((i) => Math.max(0, i - 1));
     if (key.downArrow) setFocusedIndex((i) => Math.min(steps.length - 1, i + 1));
     if (input === 'm') setShowPicker(true);
     if (key.return) {
       setInitiative(Math.floor(Math.random() * 20) + 1);
       setIsRunning(true);
+      const ctrl = new AbortController();
+      abortCtrlRef.current = ctrl;
       const override: Parameters<typeof orchestrator.run>[4] = {
         ...(activeSkillIds && activeSkillIds.length > 0 ? { skillIds: activeSkillIds } : {}),
         ...(activePluginIds && activePluginIds.length > 0 ? { pluginIds: activePluginIds } : {}),
@@ -319,7 +342,7 @@ export function PipelineScreen({
 
       const runner = isDemo
         ? runDemoPipeline(intent, steps, onUpdate, onEvent)
-        : orchestrator.run(intent, steps, onUpdate, undefined, override, onEvent);
+        : orchestrator.run(intent, steps, onUpdate, undefined, override, onEvent, ctrl.signal);
 
       void runner
         .then((run) => {
@@ -327,7 +350,9 @@ export function PipelineScreen({
         })
         .finally(() => {
           setIsRunning(false);
+          setCancelRequested(false);
           setPendingReview(null);
+          abortCtrlRef.current = null;
         });
     }
   });
@@ -444,7 +469,27 @@ export function PipelineScreen({
         </Box>
       )}
 
-      <Footer steps={steps} keybindings={KEYBINDINGS} />
+      {/* Abort confirmation overlay */}
+      {cancelRequested && (
+        <Box
+          borderStyle="round"
+          borderColor="red"
+          paddingX={2}
+          paddingY={1}
+          marginX={1}
+          marginTop={1}
+        >
+          <Text color="red" bold>
+            Abort after current step?{'  '}
+          </Text>
+          <Text color="white">
+            <Text color="red">[q]</Text> confirm{'  '}
+            <Text color="gray">[Esc]</Text> cancel
+          </Text>
+        </Box>
+      )}
+
+      <Footer steps={steps} keybindings={isRunning ? KEYBINDINGS_RUNNING : KEYBINDINGS_IDLE} />
     </Box>
   );
 }

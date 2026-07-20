@@ -212,6 +212,7 @@ export function Workspace({ initialIntent, skipRoles, startOnWelcome = false }: 
           <PipelineScreen
             intent={intent}
             onComplete={handlePipelineComplete}
+            onBack={handleNewPipeline}
             onStepsChange={handleStepsChange}
             {...(isDemo ? { isDemo: true } : {})}
             {...(skipRoles ? { skipRoles } : {})}
