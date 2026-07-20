@@ -1,7 +1,7 @@
 export const projectConfigSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
-  $id: 'lunatar.config.schema.json',
-  title: 'LunAtar Project Config',
+  $id: 'lunira.config.schema.json',
+  title: 'LunIra Project Config',
   type: 'object',
   additionalProperties: false,
   properties: {

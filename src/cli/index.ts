@@ -23,8 +23,8 @@ const { version } = packageJson;
 const program = new Command();
 
 program
-  .name('lunatar')
-  .description("Lun'Atar — multi-agent AI development pipeline CLI")
+  .name('lunira')
+  .description("Lun'Ira — multi-agent AI development pipeline CLI")
   .version(version);
 
 // ─── run ──────────────────────────────────────────────────────────────────────
@@ -62,7 +62,11 @@ program
   .option('--max-iterations <n>', 'max Dev→QA retry iterations on QA fail (default: 2)', (v) =>
     parseInt(v, 10),
   )
-  .option('--no-banner', 'suppress the startup banner (also: LUNATAR_NO_BANNER=1)')
+  .option(
+    '--plan-review',
+    'pause after Planner and require human approval before Dev runs (headless mode only)',
+  )
+  .option('--no-banner', 'suppress the startup banner (also: LUNIRA_NO_BANNER=1)')
   .action(
     async (
       intent?: string,
@@ -80,6 +84,7 @@ program
         budgetUsd?: number;
         dailyBudgetUsd?: number;
         maxIterations?: number;
+        planReview?: boolean;
         noBanner?: boolean;
       },
     ) => {
@@ -98,6 +103,7 @@ program
         ...(opts?.budgetUsd !== undefined ? { budgetUsd: opts.budgetUsd } : {}),
         ...(opts?.dailyBudgetUsd !== undefined ? { dailyBudgetUsd: opts.dailyBudgetUsd } : {}),
         ...(opts?.maxIterations !== undefined ? { maxIterations: opts.maxIterations } : {}),
+        ...(opts?.planReview ? { planReview: true } : {}),
         ...(opts?.noBanner ? { noBanner: true } : {}),
       });
     },
@@ -137,7 +143,7 @@ program
     // "list" needs no key; all others require one
     if (action !== 'list' && !key) {
       console.error(
-        `Key is required for action "${action}". Example: lunatar config ${action} groq.apiKey`,
+        `Key is required for action "${action}". Example: lunira config ${action} groq.apiKey`,
       );
       process.exit(1);
     }
@@ -148,7 +154,7 @@ program
 
 program
   .command('init')
-  .description('Scaffold a new project with lunatar conventions')
+  .description('Scaffold a new project with lunira conventions')
   .option('-n, --name <name>', 'project name (lowercase, hyphens)')
   .option('-t, --type <type>', 'project type: frontend | fullstack | cli | lib')
   .option('--skip-install', 'skip npm install after scaffolding')
@@ -170,7 +176,7 @@ program
 
 program
   .command('install <type> <name>')
-  .description('install a skill or plugin from npm (lunatar-skill-* / lunatar-plugin-*)')
+  .description('install a skill or plugin from npm (lunira-skill-* / lunira-plugin-*)')
   .action(async (type: string, name: string) => {
     const { installCommand } = await import('./commands/install.js');
     installCommand(type, name);

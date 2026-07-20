@@ -160,7 +160,7 @@ export async function callAgent<T>(
         let result: string;
         if (plugin) {
           if (!isPermitted(plugin)) {
-            result = `Permission denied: "${plugin.name}" requires ${plugin.tier} access. Grant it with: lunatar permissions grant ${plugin.id}`;
+            result = `Permission denied: "${plugin.name}" requires ${plugin.tier} access. Grant it with: lunira permissions grant ${plugin.id}`;
           } else {
             try {
               result = await plugin.handler(tc.input, pluginContext);

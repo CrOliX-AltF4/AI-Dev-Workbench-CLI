@@ -85,7 +85,7 @@ describe('executeCodePlugin', () => {
   it('cleans up tmp file after execution', async () => {
     mockSpawn.mockReturnValue(makeChild(0));
     await executeCodePlugin.handler({ file: '/tmp/test.js' }, CTX);
-    expect(mockRm).toHaveBeenCalledWith(expect.stringContaining('lunatar-exec-'), { force: true });
+    expect(mockRm).toHaveBeenCalledWith(expect.stringContaining('lunira-exec-'), { force: true });
   });
 
   it('passes args to spawn', async () => {

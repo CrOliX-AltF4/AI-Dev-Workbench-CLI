@@ -76,7 +76,7 @@ export function appPage(name: string): string {
   return (
     <main>
       <h1>${name}</h1>
-      <p>Scaffolded with lunatar. Run <code>lunatar run &quot;&lt;intent&gt;&quot;</code> to build.</p>
+      <p>Scaffolded with lunira. Run <code>lunira run &quot;&lt;intent&gt;&quot;</code> to build.</p>
     </main>
   );
 }

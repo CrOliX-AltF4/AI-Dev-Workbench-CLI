@@ -30,7 +30,7 @@ export interface PipelinePreload {
 }
 
 // ─── Pipeline override ────────────────────────────────────────────────────────
-// TUI in-session selection that takes precedence over lunatar.config.json.
+// TUI in-session selection that takes precedence over lunira.config.json.
 
 export interface PipelineOverride {
   skillIds?: string[];
@@ -38,6 +38,12 @@ export interface PipelineOverride {
   /** Abort the pipeline if accumulated cost exceeds this value (USD). */
   maxCostUsd?: number;
   maxIterations?: number; // default: 2
+  /**
+   * Called after the Planner step completes. Resolves to 'approve' to continue
+   * into Dev, or 'reject' to abort the run. If omitted the pipeline continues
+   * without pausing (default / non-interactive behaviour).
+   */
+  onPlanReview?: (plan: PlannerOutput) => Promise<'approve' | 'reject'>;
 }
 
 // ─── Internal pipeline context ────────────────────────────────────────────────
@@ -98,7 +104,7 @@ export async function runPipeline(
   let skillRegistry: SkillRegistry;
   let pluginRegistry: PluginRegistry;
   try {
-    projectConfig = await loadProjectConfig(process.cwd());
+    projectConfig = await loadProjectConfig(preload?.cwd ?? process.cwd());
 
     const externalSkillPaths = projectConfig.skills.external ?? [];
     const externalPluginPaths = projectConfig.plugins.external ?? [];
@@ -257,6 +263,28 @@ export async function runPipeline(
               const plannerChanges = applyMeta('completed', output, meta, plannerSkills);
               patch(i, plannerChanges);
               emitStepCompleted(step, plannerChanges, onEvent);
+
+              // Plan review pause — only on the first iteration (Planner only runs once).
+              if (override?.onPlanReview && iterationCount === 1) {
+                onEvent?.({
+                  type: 'plan_review_required',
+                  planSummary: {
+                    architecture: output.architecture,
+                    tasks: output.tasks.length,
+                    estimatedFiles: output.estimatedFiles,
+                    risks: output.risks,
+                  },
+                });
+                const verdict = await override.onPlanReview(output);
+                if (verdict === 'reject') {
+                  run.status = 'failed';
+                  for (let j = i + 1; j < run.steps.length; j++) {
+                    patch(j, { status: 'skipped' });
+                  }
+                  run.totalDurationMs = Date.now() - wallStart;
+                  return run;
+                }
+              }
               break;
             }
             case 'dev': {

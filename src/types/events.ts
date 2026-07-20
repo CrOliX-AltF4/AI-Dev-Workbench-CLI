@@ -22,4 +22,13 @@ export type PipelineEvent =
       issues: QAIssue[];
     }
   | { type: 'run_completed'; run: PipelineRun }
-  | { type: 'budget_warning'; percentUsed: number; spentUsd: number; limitUsd: number };
+  | { type: 'budget_warning'; percentUsed: number; spentUsd: number; limitUsd: number }
+  | {
+      type: 'plan_review_required';
+      planSummary: {
+        architecture: string;
+        tasks: number;
+        estimatedFiles: string[];
+        risks: string[];
+      };
+    };

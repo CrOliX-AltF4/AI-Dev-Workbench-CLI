@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { Plugin } from './types.js';
 
-const PERMS_DIR = join(homedir(), '.config', 'lunatar');
+const PERMS_DIR = join(homedir(), '.config', 'lunira');
 const PERMS_FILE = join(PERMS_DIR, 'permissions.json');
 
 interface PermissionsStore {

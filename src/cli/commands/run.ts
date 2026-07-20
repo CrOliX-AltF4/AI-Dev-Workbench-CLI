@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
+import * as readline from 'node:readline';
 import { render } from 'ink';
 import React from 'react';
 import { Workspace } from '../../ui/workspace/Workspace.js';
@@ -7,7 +8,7 @@ import { buildDefaultSteps, parseSkipRoles, applyStepOverrides } from '../../pip
 import type { PipelinePreload, PipelineOverride } from '../../pipeline/index.js';
 import { getModelById } from '../../models/catalog.js';
 import * as orchestrator from '../../orchestrator/index.js';
-import type { POOutput, CodeFile } from '../../agents/types.js';
+import type { POOutput, PlannerOutput, CodeFile } from '../../agents/types.js';
 import type { AgentRole, PipelineStep, ProviderName } from '../../types/index.js';
 import type { PipelineEvent } from '../../types/events.js';
 import { gatherWorkspaceContext } from '../workspace-context.js';
@@ -17,7 +18,15 @@ import { printBanner } from '../banner.js';
 
 // ─── Shared role labels for progress output ───────────────────────────────────
 
-const VALID_PROVIDERS: ReadonlySet<string> = new Set(['groq', 'gemini', 'claude', 'openai', 'nim']);
+const VALID_PROVIDERS: ReadonlySet<string> = new Set([
+  'groq',
+  'gemini',
+  'claude',
+  'openai',
+  'nim',
+  'openrouter',
+  'ollama',
+]);
 
 const ROLE_LABELS: Record<string, string> = {
   po: 'Product Owner',
@@ -44,6 +53,7 @@ interface RunOptions {
   budgetUsd?: number;
   dailyBudgetUsd?: number;
   maxIterations?: number;
+  planReview?: boolean;
 }
 
 // ─── PO output loader ─────────────────────────────────────────────────────────
@@ -116,8 +126,8 @@ function dryRun(intent: string | undefined, skipRoles: ReadonlySet<AgentRole>): 
   const steps = buildDefaultSteps(skipRoles);
 
   const header = intent
-    ? `lunatar — dry run for: "${intent}"`
-    : 'lunatar — dry run (no intent given)';
+    ? `lunira — dry run for: "${intent}"`
+    : 'lunira — dry run (no intent given)';
   process.stdout.write(`\n${header}\n\n`);
 
   const COL = { role: 16, model: 22, provider: 10, tokens: 16, cost: 10 };
@@ -170,7 +180,7 @@ function dryRun(intent: string | undefined, skipRoles: ReadonlySet<AgentRole>): 
 
   if (intent) {
     const skipFlag = skipRoles.size > 0 ? ` --skip ${[...skipRoles].join(',')}` : '';
-    process.stdout.write(`\n  Run with: lunatar run "${intent}"${skipFlag}\n`);
+    process.stdout.write(`\n  Run with: lunira run "${intent}"${skipFlag}\n`);
   }
 
   process.stdout.write('\n');
@@ -204,6 +214,7 @@ async function headlessRun(
   model?: string,
   provider?: string,
   suggestCommit?: boolean,
+  planReview?: boolean,
 ): Promise<void> {
   let steps = buildDefaultSteps(skipRoles);
   if (model !== undefined || provider !== undefined) {
@@ -220,7 +231,7 @@ async function headlessRun(
     .join(', ');
 
   printBanner();
-  process.stderr.write(`lunatar — running pipeline: "${intent}"\n`);
+  process.stderr.write(`lunira — running pipeline: "${intent}"\n`);
   if (skippedNames) process.stderr.write(`Skipping: ${skippedNames}\n`);
   process.stderr.write('\n');
 
@@ -261,7 +272,36 @@ async function headlessRun(
       }
     : undefined;
 
-  const run = await orchestrator.run(intent, steps, onUpdate, preload, pipelineOverride, onEvent);
+  const headlessOnPlanReview = planReview
+    ? (plan: PlannerOutput): Promise<'approve' | 'reject'> => {
+        process.stderr.write('\n─── Plan Review ─────────────────────────────────────────\n');
+        process.stderr.write(`Architecture: ${plan.architecture}\n`);
+        process.stderr.write(`Tasks: ${String(plan.tasks.length)}\n`);
+        if (plan.estimatedFiles.length > 0) {
+          process.stderr.write(`Files: ${plan.estimatedFiles.join(', ')}\n`);
+        }
+        if (plan.risks.length > 0) {
+          process.stderr.write(`Risks: ${plan.risks.join(' · ')}\n`);
+        }
+        process.stderr.write('─────────────────────────────────────────────────────────\n');
+
+        return new Promise((resolve) => {
+          const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
+          rl.question('Approve plan? [Y/n] ', (answer) => {
+            rl.close();
+            const trimmed = answer.trim().toLowerCase();
+            resolve(trimmed === '' || trimmed === 'y' ? 'approve' : 'reject');
+          });
+        });
+      }
+    : undefined;
+
+  const effectiveOverride: PipelineOverride = {
+    ...pipelineOverride,
+    ...(headlessOnPlanReview ? { onPlanReview: headlessOnPlanReview } : {}),
+  };
+
+  const run = await orchestrator.run(intent, steps, onUpdate, preload, effectiveOverride, onEvent);
 
   process.stderr.write(
     `\nDone — status: ${run.status} · $${run.totalCostUsd.toFixed(4)} · ${run.totalTokens.toLocaleString()} tok · ${(run.totalDurationMs / 1000).toFixed(1)}s\n`,
@@ -309,7 +349,7 @@ async function headlessRun(
 export async function runCommand(options: RunOptions): Promise<void> {
   // ── Banner suppression ──────────────────────────────────────────────────────
   if (options.noBanner) {
-    process.env['LUNATAR_NO_BANNER'] = '1';
+    process.env['LUNIRA_NO_BANNER'] = '1';
   }
 
   // ── Resolve skip roles ──────────────────────────────────────────────────────
@@ -364,7 +404,7 @@ export async function runCommand(options: RunOptions): Promise<void> {
   // ── Validate --model and --provider ────────────────────────────────────────
   if (options.model && !getModelById(options.model)) {
     process.stderr.write(
-      `Error: unknown model "${options.model}". Run "lunatar catalog" to see available models.\n`,
+      `Error: unknown model "${options.model}". Run "lunira catalog" to see available models.\n`,
     );
     process.exit(1);
   }
@@ -412,7 +452,7 @@ export async function runCommand(options: RunOptions): Promise<void> {
   if (options.json || options.output || options.apply) {
     if (!resolvedIntent) {
       process.stderr.write(
-        'Error: --json / --output / --apply requires an intent argument. Example: lunatar run "build a REST API" --apply\n',
+        'Error: --json / --output / --apply requires an intent argument. Example: lunira run "build a REST API" --apply\n',
       );
       process.exit(1);
       return;
@@ -427,6 +467,7 @@ export async function runCommand(options: RunOptions): Promise<void> {
       options.model,
       options.provider,
       options.apply,
+      options.planReview,
     );
     return;
   }

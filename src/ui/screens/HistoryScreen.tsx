@@ -106,7 +106,7 @@ export function HistoryScreen({ onRerun, onBack }: HistoryScreenProps) {
       <Box flexDirection="column">
         <Separator />
         <Text>
-          No runs yet. Start your first forge with <Text color="yellow">lunatar run</Text>.
+          No runs yet. Start your first forge with <Text color="yellow">lunira run</Text>.
         </Text>
       </Box>
     );

@@ -1,6 +1,6 @@
 {
-  "name": "lunatar",
-  "version": "1.1.0",
+  "name": "@crolix-altf4/lunira",
+  "version": "1.2.1",
   "description": "Multi-agent AI development pipeline CLI — forge production-ready code from a single intent",
   "type": "module",
   "engines": {
@@ -8,7 +8,7 @@
     "npm": ">=10.0.0"
   },
   "bin": {
-    "lunatar": "./dist/index.js"
+    "lunira": "dist/index.js"
   },
   "scripts": {
     "build": "tsup",
@@ -45,11 +45,11 @@
   "author": "CrOliX-AltF4",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CrOliX-AltF4/LunAtar.git"
+    "url": "git+https://github.com/CrOliX-AltF4/LunIra.git"
   },
-  "homepage": "https://github.com/CrOliX-AltF4/LunAtar#readme",
+  "homepage": "https://github.com/CrOliX-AltF4/LunIra#readme",
   "bugs": {
-    "url": "https://github.com/CrOliX-AltF4/LunAtar/issues"
+    "url": "https://github.com/CrOliX-AltF4/LunIra/issues"
   },
   "files": [
     "dist"

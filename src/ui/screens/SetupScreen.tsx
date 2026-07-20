@@ -217,7 +217,7 @@ export function SetupScreen({ onComplete, onBack }: SetupScreenProps) {
         {!entering && (
           <Box marginTop={1} flexDirection="column" gap={0}>
             <Text color="gray" dimColor>
-              Persist a key: <Text color="white">lunatar config set groq.apiKey sk-...</Text>
+              Persist a key: <Text color="white">lunira config set groq.apiKey sk-...</Text>
             </Text>
             <Text color="gray" dimColor>
               Or add to your project&apos;s <Text color="white">.env</Text>:{' '}

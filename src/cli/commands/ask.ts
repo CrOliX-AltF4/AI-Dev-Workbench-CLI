@@ -16,7 +16,7 @@ export interface AskOptions {
 export async function askCommand(prompt: string, opts: AskOptions): Promise<void> {
   const configured = getConfiguredProviders();
   if (configured.length === 0) {
-    process.stderr.write('No provider configured. Run: lunatar setup\n');
+    process.stderr.write('No provider configured. Run: lunira setup\n');
     process.exit(1);
     return;
   }
@@ -41,7 +41,7 @@ export async function askCommand(prompt: string, opts: AskOptions): Promise<void
 
   const provider = getProvider(providerName);
   if (!provider.isConfigured()) {
-    process.stderr.write(`Provider "${providerName}" is not configured. Run: lunatar setup\n`);
+    process.stderr.write(`Provider "${providerName}" is not configured. Run: lunira setup\n`);
     process.exit(1);
     return;
   }

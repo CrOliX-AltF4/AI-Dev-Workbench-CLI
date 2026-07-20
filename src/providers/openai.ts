@@ -8,7 +8,7 @@ export class OpenAIProvider implements LLMProvider {
   private client(): OpenAI {
     const apiKey = getApiKey('openai');
     if (!apiKey)
-      throw new Error('OpenAI API key not configured. Run: lunatar config set openai.apiKey <key>');
+      throw new Error('OpenAI API key not configured. Run: lunira config set openai.apiKey <key>');
     return new OpenAI({ apiKey });
   }
 

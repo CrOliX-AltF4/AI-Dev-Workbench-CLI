@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { mkdir, writeFile, readdir, unlink } from 'node:fs/promises';
 import type { POOutput } from '../agents/types.js';
 
-const RECOVERY_DIR = join(homedir(), '.lunatar', 'recovery');
+const RECOVERY_DIR = join(homedir(), '.lunira', 'recovery');
 const MAX_RECOVERY_FILES = 10;
 
 async function ensureDir(): Promise<void> {

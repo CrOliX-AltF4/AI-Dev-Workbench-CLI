@@ -54,8 +54,14 @@ export function Workspace({ initialIntent, skipRoles, startOnWelcome = false }: 
 
   // ── Companion state ─────────────────────────────────────────────────────────
   const [companionState, setCompanionState] = useState<CompanionState>('idle');
+  // ── Intent history ──────────────────────────────────────────────────────────
+  const [intentHistory, setIntentHistory] = useState<string[]>([]);
   // ── Navigation handlers ─────────────────────────────────────────────────────
   const handleIntentFromBar = (value: string) => {
+    setIntentHistory((prev) => {
+      if (prev.length > 0 && prev[prev.length - 1] === value) return prev;
+      return [...prev, value];
+    });
     setIntent(value);
     setCompletedRun(null);
     setCurrentStep(undefined);
@@ -232,6 +238,7 @@ export function Workspace({ initialIntent, skipRoles, startOnWelcome = false }: 
           locked={view !== 'prompt'}
           onSubmit={handleIntentFromBar}
           onCommand={handleCommand}
+          intentHistory={intentHistory}
           {...(hasActiveConfig
             ? { activeCount: activeSkillIds.length + activePluginIds.length }
             : {})}

@@ -85,7 +85,7 @@ export async function costsCommand(opts: { days?: number; json?: boolean }): Pro
   const pad = (s: string, n: number) => s.padEnd(n);
   const COL = { provider: 14, runs: 8, tokens: 14, cost: 12 };
 
-  process.stdout.write('\nlunatar — cost summary\n\n');
+  process.stdout.write('\nlunira — cost summary\n\n');
 
   process.stdout.write(
     `  Today          ${formatUsd(todaySpend).padStart(10)}   ${todayTokens.toLocaleString()} tok   ${todayRuns.length.toString()} run(s)\n`,

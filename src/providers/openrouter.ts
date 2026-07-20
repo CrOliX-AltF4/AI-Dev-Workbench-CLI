@@ -11,14 +11,14 @@ export class OpenRouterProvider implements LLMProvider {
     const apiKey = getApiKey('openrouter');
     if (!apiKey)
       throw new Error(
-        'OpenRouter API key not configured. Run: lunatar config set openrouter.apiKey <key>',
+        'OpenRouter API key not configured. Run: lunira config set openrouter.apiKey <key>',
       );
     return new OpenAI({
       apiKey,
       baseURL: OPENROUTER_BASE_URL,
       defaultHeaders: {
-        'HTTP-Referer': 'https://github.com/CrOliX-AltF4/LunAtar',
-        'X-Title': 'LunAtar',
+        'HTTP-Referer': 'https://github.com/CrOliX-AltF4/LunIra',
+        'X-Title': 'LunIra',
       },
     });
   }

@@ -14,8 +14,8 @@ export function agentsMd(name: string, type: ProjectType, stack: string): string
 
 const AGENTS_MD_TEMPLATE = `# AGENTS — {{name}}
 
-> lunatar multi-agent pipeline configuration.
-> \`lunatar run "<intent>"\` — primary development workflow.
+> lunira multi-agent pipeline configuration.
+> \`lunira run "<intent>"\` — primary development workflow.
 
 ## Roles & models
 
@@ -71,7 +71,7 @@ export function claudeMd(name: string, type: ProjectType, stack: string): string
 const CLAUDE_MD_TEMPLATE = `# CLAUDE.md — {{name}}
 
 > Claude Code intervention contract.
-> Primary workflow: \`lunatar run "<intent>"\` — use Claude Code only for what the pipeline cannot handle.
+> Primary workflow: \`lunira run "<intent>"\` — use Claude Code only for what the pipeline cannot handle.
 
 ## When to use Claude Code
 
@@ -156,7 +156,7 @@ export function envExample(): string {
   return ENV_EXAMPLE;
 }
 
-const ENV_EXAMPLE = `# lunatar LLM providers — fill in at least one
+const ENV_EXAMPLE = `# lunira LLM providers — fill in at least one
 
 GROQ_API_KEY=
 GEMINI_API_KEY=
@@ -291,9 +291,9 @@ ${excludeLine}    },
 `;
 }
 
-// ─── lunatar.config.json ──────────────────────────────────────────────────────
+// ─── lunira.config.json ──────────────────────────────────────────────────────
 
-export function lunatarConfig(): string {
+export function luniraConfig(): string {
   return JSON.stringify(
     {
       skills: {
@@ -329,12 +329,12 @@ export function readmeMd(name: string, type: ProjectType): string {
 
 const README_TEMPLATE = `# {{name}}
 
-> {{type}} project — scaffolded with [lunatar](https://github.com/CrOliX-AltF4/AI-Dev-Workbench-CLI)
+> {{type}} project — scaffolded with [lunira](https://github.com/CrOliX-AltF4/AI-Dev-Workbench-CLI)
 
 ## Usage
 
 \`\`\`bash
-lunatar run "<describe what you want to build>"
+lunira run "<describe what you want to build>"
 \`\`\`
 
 ## Development

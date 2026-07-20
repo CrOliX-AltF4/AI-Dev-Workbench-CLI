@@ -5,11 +5,11 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 describe('project config — external field', () => {
-  it('parses external plugin and skill paths from lunatar.config.json', async () => {
+  it('parses external plugin and skill paths from lunira.config.json', async () => {
     const dir = join(tmpdir(), `lunatar-test-${String(Date.now())}`);
     await mkdir(dir, { recursive: true });
     await writeFile(
-      join(dir, 'lunatar.config.json'),
+      join(dir, 'lunira.config.json'),
       JSON.stringify({
         skills: { all: [], external: ['./my-skill.md'] },
         plugins: { all: [], external: ['./my-plugin.js'] },
@@ -25,7 +25,7 @@ describe('project config — external field', () => {
     const dir = join(tmpdir(), `lunatar-test-${String(Date.now())}`);
     await mkdir(dir, { recursive: true });
     await writeFile(
-      join(dir, 'lunatar.config.json'),
+      join(dir, 'lunira.config.json'),
       JSON.stringify({ skills: { all: [] }, plugins: { all: [] } }),
     );
     const config = await loadProjectConfig(dir);
@@ -40,7 +40,7 @@ describe('project config — providers.fallback', () => {
     const dir = join(tmpdir(), `lunatar-fb-test-${String(Date.now())}`);
     await mkdir(dir, { recursive: true });
     await writeFile(
-      join(dir, 'lunatar.config.json'),
+      join(dir, 'lunira.config.json'),
       JSON.stringify({
         skills: { all: [] },
         plugins: { all: [] },
@@ -56,7 +56,7 @@ describe('project config — providers.fallback', () => {
     const dir = join(tmpdir(), `lunatar-fb-test2-${String(Date.now())}`);
     await mkdir(dir, { recursive: true });
     await writeFile(
-      join(dir, 'lunatar.config.json'),
+      join(dir, 'lunira.config.json'),
       JSON.stringify({ skills: { all: [] }, plugins: { all: [] } }),
     );
     const config = await loadProjectConfig(dir);

@@ -31,7 +31,7 @@ export async function discoverNpmSkills(cwd = process.cwd()): Promise<Skill[]> {
   if (!existsSync(nodeModules)) return [];
 
   const entries = readdirSync(nodeModules);
-  const skillPkgs = entries.filter((e) => e.startsWith('lunatar-skill-'));
+  const skillPkgs = entries.filter((e) => e.startsWith('lunira-skill-'));
 
   const loaded: Skill[] = [];
   for (const pkg of skillPkgs) {

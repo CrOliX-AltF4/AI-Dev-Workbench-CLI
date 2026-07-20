@@ -32,7 +32,7 @@ export async function run(
           type: 'step_failed',
           stepId: failedStep?.id ?? 'unknown',
           role: failedStep?.role ?? 'dev',
-          error: `${failedStep?.error ?? 'unknown error'}\n\nPartial progress saved. Resume with:\n  lunatar run --from-po "${recoveryPath}"`,
+          error: `${failedStep?.error ?? 'unknown error'}\n\nPartial progress saved. Resume with:\n  lunira run --from-po "${recoveryPath}"`,
         });
       } catch {
         // best-effort — don't mask the original failure

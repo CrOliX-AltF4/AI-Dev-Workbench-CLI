@@ -8,15 +8,15 @@ function isValidType(type: string): type is InstallType {
 }
 
 function packageName(type: InstallType, name: string): string {
-  return `lunatar-${type}-${name}`;
+  return `lunira-${type}-${name}`;
 }
 
 export function installCommand(type: string, name: string): void {
   if (!isValidType(type)) {
     process.stderr.write(
-      `Usage: lunatar install <skill|plugin> <name>\n` +
-        `  lunatar install skill  my-skill   → npm install -g lunatar-skill-my-skill\n` +
-        `  lunatar install plugin my-plugin  → npm install -g lunatar-plugin-my-plugin\n`,
+      `Usage: lunira install <skill|plugin> <name>\n` +
+        `  lunira install skill  my-skill   → npm install -g lunira-skill-my-skill\n` +
+        `  lunira install plugin my-plugin  → npm install -g lunira-plugin-my-plugin\n`,
     );
     process.exit(1);
   }

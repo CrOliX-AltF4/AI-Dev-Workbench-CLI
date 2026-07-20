@@ -22,7 +22,7 @@ export function classifyProviderError(err: unknown): ClassifiedError {
     return {
       code: 'auth',
       message: `Authentication failed: ${raw}`,
-      hint: 'Check your API key with: lunatar config list',
+      hint: 'Check your API key with: lunira config list',
     };
   }
 
@@ -58,6 +58,6 @@ export function classifyProviderError(err: unknown): ClassifiedError {
   return {
     code: 'unknown',
     message: raw,
-    hint: 'Run lunatar setup to verify your configuration.',
+    hint: 'Run lunira setup to verify your configuration.',
   };
 }

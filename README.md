@@ -1,10 +1,10 @@
 <div align="center">
 
-# ◆ Lun'Atar
+# ◆ Lun'Ira
 
-[![Version](https://img.shields.io/npm/v/lunatar?style=flat-square&color=C8A415)](https://www.npmjs.com/package/lunatar)
+[![Version](https://img.shields.io/npm/v/@crolix-altf4/lunira?style=flat-square&color=C8A415)](https://www.npmjs.com/package/@crolix-altf4/lunira)
 [![License](https://img.shields.io/badge/license-MIT-333333?style=flat-square)](LICENSE)
-[![CI](https://img.shields.io/github/actions/workflow/status/CrOliX-AltF4/LunAtar/ci.yml?style=flat-square&label=CI)](https://github.com/CrOliX-AltF4/LunAtar/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/CrOliX-AltF4/LunIra/ci.yml?style=flat-square&label=CI)](https://github.com/CrOliX-AltF4/LunIra/actions)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-555555?style=flat-square)](.)
 
 **intent → code**
@@ -16,7 +16,7 @@ _A multi-agent AI pipeline CLI. Feed the forge a plain-text intent — refined, 
 ---
 
 <div align="center">
-  <img src="assets/calcifer-f0.png" alt="Lun'Atar — the forge spirit" width="140"/>
+  <img src="assets/calcifer-f0.png" alt="Lun'Ira — the forge spirit" width="140"/>
 </div>
 
 ---
@@ -24,15 +24,15 @@ _A multi-agent AI pipeline CLI. Feed the forge a plain-text intent — refined, 
 ## Quick start
 
 ```bash
-npm install -g lunatar
-lunatar               # the forge opens — setup runs automatically on first launch
+npm install -g @crolix-altf4/lunira
+lunira               # the forge opens — setup runs automatically on first launch
 ```
 
 > [!TIP]
 > No API key yet? Type `/demo` in the forge bar — a full pipeline runs on mock data, no credentials needed.
 
 > [!TIP]
-> **Easiest entry point:** one [OpenRouter](https://openrouter.ai) key gives you access to 200+ models including free tiers. Lun'Atar will suggest it automatically if no provider is configured.
+> **Easiest entry point:** one [OpenRouter](https://openrouter.ai) key gives you access to 200+ models including free tiers. Lun'Ira will suggest it automatically if no provider is configured.
 
 ---
 
@@ -67,10 +67,10 @@ One plain-text intent enters. Four agents process it in sequence — each focuse
       ✦ artifact sealed
 ```
 
-Why four agents instead of one? Context pollution. A single LLM handling PO + architecture + code + QA in one context degrades fast. Lun'Atar splits each responsibility, keeps outputs typed, and gives you full traceability per run.
+Why four agents instead of one? Context pollution. A single LLM handling PO + architecture + code + QA in one context degrades fast. Lun'Ira splits each responsibility, keeps outputs typed, and gives you full traceability per run.
 
 > [!NOTE]
-> "Atar" is the Zoroastrian deity of sacred fire — the forge that purifies and transforms. Part of the [Lun' ecosystem](https://github.com/CrOliX-AltF4).
+> "Ira" is the sin of Wrath (Trinity Seven) — the forge that strikes with precision and force. Part of the [Lun' ecosystem](https://github.com/CrOliX-AltF4).
 
 ---
 
@@ -101,12 +101,12 @@ _Skills_ are expertise injected into agent prompts — TypeScript conventions, R
 
 _Plugins_ are tools the agents can wield — write files, read context, web search, run commands, execute code, open GitHub issues. Bridges to the outside world.
 
-Every plugin carries a safety tier — `safe`, `restricted`, or `dangerous`. The first time you activate a restricted or dangerous plugin from the Arsenal screen, Lun'Atar prompts for consent. Grants are saved in `~/.config/lunatar/permissions.json` so you're only asked once.
+Every plugin carries a safety tier — `safe`, `restricted`, or `dangerous`. The first time you activate a restricted or dangerous plugin from the Arsenal screen, Lun'Ira prompts for consent. Grants are saved in `~/.config/lunira/permissions.json` so you're only asked once.
 
-Both are declared per-project via `lunatar.config.json` and selectable per-run from the TUI (`/arsenal`).
+Both are declared per-project via `lunira.config.json` and selectable per-run from the TUI (`/arsenal`).
 
 > [!NOTE]
-> Skills and plugins are community-extensible via npm packages (`lunatar-skill-*`, `lunatar-plugin-*`). Install with `lunatar install skill <name>` or `lunatar install plugin <name>`, and Lun'Atar discovers them automatically.
+> Skills and plugins are community-extensible via npm packages (`lunira-skill-*`, `lunira-plugin-*`). Install with `lunira install skill <name>` or `lunira install plugin <name>`, and Lun'Ira discovers them automatically.
 
 **TUI**
 
@@ -122,19 +122,19 @@ Both are declared per-project via `lunatar.config.json` and selectable per-run f
 
 ## Setup
 
-The forge is cold until you light it. On first launch, Lun'Atar opens setup automatically.
+The forge is cold until you light it. On first launch, Lun'Ira opens setup automatically.
 
 ```bash
-lunatar setup                              # interactive provider configuration
-lunatar config set groq.apiKey <key>       # or configure directly
-lunatar config set openrouter.apiKey <key> # one key, 200+ models
+lunira setup                              # interactive provider configuration
+lunira config set groq.apiKey <key>       # or configure directly
+lunira config set openrouter.apiKey <key> # one key, 200+ models
 ```
 
 > [!TIP]
-> Keys are stored in `~/.lunatar/config.json`. Environment variables always take precedence — useful for CI or per-project overrides:
+> Keys are stored in `~/.lunira/config.json`. Environment variables always take precedence — useful for CI or per-project overrides:
 >
 > ```bash
-> GROQ_API_KEY=<key> lunatar run "..."
+> GROQ_API_KEY=<key> lunira run "..."
 > ```
 
 ---
@@ -142,24 +142,24 @@ lunatar config set openrouter.apiKey <key> # one key, 200+ models
 ## CLI
 
 ```bash
-lunatar                                         # interactive TUI
-lunatar run "build a REST API"                  # fire the forge headlessly
-lunatar run "..." --dry                         # preview cost — no LLM calls
-lunatar run "..." --apply                       # write output to current directory
-lunatar run "..." --skip qa                     # bypass a role
-lunatar run "..." --model gemini-2.5-pro        # override model
-lunatar run "..." --provider openrouter         # override provider
-lunatar run "..." --budget-usd 0.10             # abort above $0.10
-lunatar run "..." --max-iterations 3            # allow 3 Dev→QA retries
-lunatar run "..." --json                        # machine-readable output
-lunatar ask "what does this file do" --file x   # direct question to the LLM
-lunatar history                                 # browse the Annales
-lunatar costs                                   # combustible spent
-lunatar watch ./src --intent intent.txt         # re-forge on file change
-lunatar catalog                                 # list available skills and plugins
-lunatar install skill <name>                    # install a lunatar-skill-* package
-lunatar install plugin <name>                   # install a lunatar-plugin-* package
-lunatar init                                    # scaffold a new project
+lunira                                         # interactive TUI
+lunira run "build a REST API"                  # fire the forge headlessly
+lunira run "..." --dry                         # preview cost — no LLM calls
+lunira run "..." --apply                       # write output to current directory
+lunira run "..." --skip qa                     # bypass a role
+lunira run "..." --model gemini-2.5-pro        # override model
+lunira run "..." --provider openrouter         # override provider
+lunira run "..." --budget-usd 0.10             # abort above $0.10
+lunira run "..." --max-iterations 3            # allow 3 Dev→QA retries
+lunira run "..." --json                        # machine-readable output
+lunira ask "what does this file do" --file x   # direct question to the LLM
+lunira history                                 # browse the Annales
+lunira costs                                   # combustible spent
+lunira watch ./src --intent intent.txt         # re-forge on file change
+lunira catalog                                 # list available skills and plugins
+lunira install skill <name>                    # install a lunira-skill-* package
+lunira install plugin <name>                   # install a lunira-plugin-* package
+lunira init                                    # scaffold a new project
 ```
 
 ## TUI controls
@@ -203,7 +203,7 @@ lunatar init                                    # scaffold a new project
 ---
 
 > [!WARNING]
-> Lun'Atar generates code. It does not execute it. The QA agent audits for issues but is not a substitute for human review before deploying to production.
+> Lun'Ira generates code. It does not execute it. The QA agent audits for issues but is not a substitute for human review before deploying to production.
 
 ---
 
@@ -211,10 +211,10 @@ lunatar init                                    # scaffold a new project
 
 | Project                                                    | Role                                                      |
 | ---------------------------------------------------------- | --------------------------------------------------------- |
-| **LunAtar**                                                | AI dev pipeline — intent → code                           |
+| **LunIra**                                                 | AI dev pipeline — intent → code                           |
 | [LunAcedia](https://github.com/CrOliX-AltF4/LunAcedia)     | Information infrastructure — events · actions · AI butler |
 | [LunAvaritia](https://github.com/CrOliX-AltF4/LunAvaritia) | Mobile companion — Android                                |
-| [LunImago](https://github.com/CrOliX-AltF4/LunImago)       | Imitation learning — gameplay → ONNX policy               |
+| [LunGula](https://github.com/CrOliX-AltF4/LunGula)         | Imitation learning — gameplay → ONNX policy               |
 | LunAnima                                                   | AI companion core — private                               |
 
 ---

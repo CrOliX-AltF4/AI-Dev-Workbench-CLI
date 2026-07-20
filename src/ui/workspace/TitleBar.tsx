@@ -9,7 +9,7 @@ import { GOLD, forgeronLevel } from '../theme.js';
 import { listRuns } from '../../storage/index.js';
 
 const { version } = packageJson;
-const BRAND = gradient(['#5C3317', '#B87333', '#C8A415'])("⚒ Lun'Atar");
+const BRAND = gradient(['#5C3317', '#B87333', '#C8A415'])("⚒ Lun'Ira");
 
 function xpBar(current: number, total: number): string {
   const filled = total > 0 ? Math.round((current / total) * 8) : 0;

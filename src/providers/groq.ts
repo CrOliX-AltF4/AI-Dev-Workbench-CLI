@@ -8,7 +8,7 @@ export class GroqProvider implements LLMProvider {
   private client(): Groq {
     const apiKey = getApiKey('groq');
     if (!apiKey)
-      throw new Error('Groq API key not configured. Run: lunatar config set groq.apiKey <key>');
+      throw new Error('Groq API key not configured. Run: lunira config set groq.apiKey <key>');
     return new Groq({ apiKey });
   }
 

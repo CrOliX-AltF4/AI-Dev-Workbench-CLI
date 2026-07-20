@@ -13,7 +13,7 @@ export async function loadMcpPlugins(servers: Record<string, McpServerConfig>): 
       plugins.push(...result.value);
     } else {
       const name = Object.keys(servers)[i] ?? '?';
-      console.warn(`[lunatar] MCP server "${name}" failed to load:`, result.reason);
+      console.warn(`[lunira] MCP server "${name}" failed to load:`, result.reason);
     }
   }
   return plugins;

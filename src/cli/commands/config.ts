@@ -77,7 +77,7 @@ export function configCommand(action: string, key: string, value?: string): void
         console.error(err instanceof Error ? err.message : String(err));
         process.exit(1);
       }
-      console.log(`✓ ${key} saved to ~/.lunatar/config.json`);
+      console.log(`✓ ${key} saved to ~/.lunira/config.json`);
       break;
     }
 
@@ -88,14 +88,14 @@ export function configCommand(action: string, key: string, value?: string): void
         process.exit(1);
       }
       removeApiKey(parsed.provider);
-      console.log(`✓ ${key} removed from ~/.lunatar/config.json`);
+      console.log(`✓ ${key} removed from ~/.lunira/config.json`);
       break;
     }
 
     case 'list': {
       const configured = listConfiguredProviders();
       if (configured.length === 0) {
-        console.log('No providers configured.\nRun: lunatar config set <provider>.apiKey <key>');
+        console.log('No providers configured.\nRun: lunira config set <provider>.apiKey <key>');
       } else {
         console.log('Configured providers:');
         for (const provider of configured) {

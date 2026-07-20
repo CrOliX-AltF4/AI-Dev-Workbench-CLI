@@ -25,7 +25,7 @@ export interface WizardResult {
 export async function runWizard(): Promise<WizardResult> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
 
-  process.stdout.write("\nLun'Atar — New Project\n\n");
+  process.stdout.write("\nLun'Ira — New Project\n\n");
 
   let name = '';
   let nameValid: true | string = 'init';

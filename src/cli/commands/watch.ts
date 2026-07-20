@@ -42,7 +42,7 @@ export async function watchCommand(watchPath: string, options: WatchOptions): Pr
     process.stderr.write('Warning: intent file is empty — will retry on next change\n');
   }
 
-  process.stderr.write(`lunatar watch: watching "${watchPath}"\n`);
+  process.stderr.write(`lunira watch: watching "${watchPath}"\n`);
   if (intentFile) process.stderr.write(`  intent: ${intentFile}\n`);
   process.stderr.write('Ctrl+C to stop\n\n');
 

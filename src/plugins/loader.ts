@@ -48,7 +48,7 @@ export async function discoverNpmPlugins(cwd = process.cwd()): Promise<Plugin[]>
   if (!existsSync(nodeModules)) return [];
 
   const entries = readdirSync(nodeModules);
-  const pluginPkgs = entries.filter((e) => e.startsWith('lunatar-plugin-'));
+  const pluginPkgs = entries.filter((e) => e.startsWith('lunira-plugin-'));
 
   const loaded: Plugin[] = [];
   for (const pkg of pluginPkgs) {

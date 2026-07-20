@@ -27,7 +27,7 @@ export async function loadProjectConfig(cwd: string): Promise<ProjectConfig> {
   try {
     value = JSON.parse(raw);
   } catch {
-    process.stderr.write(`lunatar: invalid JSON in ${configPath}\n`);
+    process.stderr.write(`lunira: invalid JSON in ${configPath}\n`);
     return { ...defaultConfig };
   }
 
@@ -35,7 +35,7 @@ export async function loadProjectConfig(cwd: string): Promise<ProjectConfig> {
     const errors = validate.errors
       ?.map((e) => `  ${e.instancePath || '(root)'} ${e.message ?? ''}`)
       .join('\n');
-    process.stderr.write(`lunatar: invalid config at ${configPath}:\n${errors ?? ''}\n`);
+    process.stderr.write(`lunira: invalid config at ${configPath}:\n${errors ?? ''}\n`);
     return { ...defaultConfig };
   }
 
@@ -59,7 +59,7 @@ export async function loadProjectConfig(cwd: string): Promise<ProjectConfig> {
 
 export async function saveProjectConfig(cwd: string, config: ProjectConfig): Promise<string> {
   const existing = await findConfig(cwd);
-  const dest = existing ?? join(cwd, 'lunatar.config.json');
+  const dest = existing ?? join(cwd, 'lunira.config.json');
   await writeFile(dest, JSON.stringify(config, null, 2) + '\n', 'utf-8');
   return dest;
 }
@@ -70,7 +70,7 @@ async function findConfig(startDir: string): Promise<string | null> {
   let parent = dirname(dir);
 
   while (parent !== dir) {
-    const configPath = join(dir, 'lunatar.config.json');
+    const configPath = join(dir, 'lunira.config.json');
     try {
       await readFile(configPath, 'utf-8');
       return configPath;
@@ -81,7 +81,7 @@ async function findConfig(startDir: string): Promise<string | null> {
     // Stop when we leave the package.json boundary
     try {
       await readFile(join(dir, 'package.json'), 'utf-8');
-      return null; // found package.json but no lunatar.config.json here — stop
+      return null; // found package.json but no lunira.config.json here — stop
     } catch {
       // no package.json here, keep going up
     }
@@ -91,7 +91,7 @@ async function findConfig(startDir: string): Promise<string | null> {
   }
 
   // Check the filesystem root itself
-  const configPath = join(dir, 'lunatar.config.json');
+  const configPath = join(dir, 'lunira.config.json');
   try {
     await readFile(configPath, 'utf-8');
     return configPath;

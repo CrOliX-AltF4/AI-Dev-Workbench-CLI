@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { loadProjectConfig, defaultConfig } from '../../src/config/project.js';
 
 describe('loadProjectConfig', () => {
-  it('returns defaultConfig when no lunatar.config.json exists', async () => {
+  it('returns defaultConfig when no lunira.config.json exists', async () => {
     const config = await loadProjectConfig('/nonexistent/path');
     expect(config).toEqual(defaultConfig);
   });
@@ -18,7 +18,7 @@ describe('loadProjectConfig', () => {
     const dir = await mkdtemp(join(tmpdir(), 'lunatar-test-'));
     try {
       await writeFile(
-        join(dir, 'lunatar.config.json'),
+        join(dir, 'lunira.config.json'),
         JSON.stringify({ skills: { dev: ['typescript-strict'] } }),
       );
       const config = await loadProjectConfig(dir);
@@ -36,7 +36,7 @@ describe('loadProjectConfig', () => {
 
     const dir = await mkdtemp(join(tmpdir(), 'lunatar-test-'));
     try {
-      await writeFile(join(dir, 'lunatar.config.json'), 'not json');
+      await writeFile(join(dir, 'lunira.config.json'), 'not json');
       const config = await loadProjectConfig(dir);
       expect(config).toEqual(defaultConfig);
     } finally {
@@ -52,7 +52,7 @@ describe('loadProjectConfig', () => {
     const dir = await mkdtemp(join(tmpdir(), 'lunatar-test-'));
     try {
       await writeFile(
-        join(dir, 'lunatar.config.json'),
+        join(dir, 'lunira.config.json'),
         JSON.stringify({ models: { dev: 'llama-3.3-70b-versatile' } }),
       );
       const config = await loadProjectConfig(dir);
@@ -69,7 +69,7 @@ describe('loadProjectConfig', () => {
 
     const dir = await mkdtemp(joinAsync(tmpdirAsync(), 'lunatar-test-'));
     try {
-      await writeFile(joinAsync(dir, 'lunatar.config.json'), '"a string"');
+      await writeFile(joinAsync(dir, 'lunira.config.json'), '"a string"');
       const config = await loadProjectConfig(dir);
       expect(config).toEqual(defaultConfig);
     } finally {
@@ -83,7 +83,7 @@ describe('loadProjectConfig', () => {
 describe('loadProjectConfig — schema validation', () => {
   it('returns default config and writes to stderr on invalid JSON', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'lunatar-'));
-    writeFileSync(join(dir, 'lunatar.config.json'), 'not json');
+    writeFileSync(join(dir, 'lunira.config.json'), 'not json');
     writeFileSync(join(dir, 'package.json'), '{}');
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
@@ -97,7 +97,7 @@ describe('loadProjectConfig — schema validation', () => {
 
   it('returns default config and writes to stderr on schema violation', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'lunatar-'));
-    writeFileSync(join(dir, 'lunatar.config.json'), JSON.stringify({ skills: 'not-an-object' }));
+    writeFileSync(join(dir, 'lunira.config.json'), JSON.stringify({ skills: 'not-an-object' }));
     writeFileSync(join(dir, 'package.json'), '{}');
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
@@ -120,7 +120,7 @@ describe('loadProjectConfig — upward lookup', () => {
 
     // Config in root, package.json in root, cwd = child (no package.json)
     writeFileSync(
-      join(root, 'lunatar.config.json'),
+      join(root, 'lunira.config.json'),
       JSON.stringify({ skills: { all: ['typescript-strict'] } }),
     );
     writeFileSync(join(root, 'package.json'), '{}');
@@ -138,12 +138,12 @@ describe('loadProjectConfig — upward lookup', () => {
 
     // Config in outer, package.json in BOTH outer and inner
     writeFileSync(
-      join(outer, 'lunatar.config.json'),
+      join(outer, 'lunira.config.json'),
       JSON.stringify({ skills: { all: ['outer-skill'] } }),
     );
     writeFileSync(join(outer, 'package.json'), '{}');
     writeFileSync(join(inner, 'package.json'), '{}');
-    // No lunatar.config.json in inner — should NOT find the outer one
+    // No lunira.config.json in inner — should NOT find the outer one
 
     const config = await loadProjectConfig(inner);
 

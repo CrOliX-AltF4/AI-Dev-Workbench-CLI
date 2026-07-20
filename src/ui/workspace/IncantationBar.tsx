@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import chalk from 'chalk';
 import { GOLD } from '../theme.js';
@@ -22,15 +22,54 @@ interface IncantationBarProps {
   onSubmit: (intent: string) => void;
   onCommand?: (cmd: string, args: string) => void;
   activeCount?: number;
+  intentHistory?: string[];
 }
 
-export function IncantationBar({ locked, onSubmit, onCommand, activeCount }: IncantationBarProps) {
+export function IncantationBar({
+  locked,
+  onSubmit,
+  onCommand,
+  activeCount,
+  intentHistory = [],
+}: IncantationBarProps) {
   const [value, setValue] = useState('');
+  const [historyIndex, setHistoryIndex] = useState<number | null>(null);
+
+  useInput(
+    (_input, key) => {
+      if (value.startsWith('/')) return;
+      if (intentHistory.length === 0) return;
+
+      if (key.upArrow) {
+        const newIndex =
+          historyIndex === null ? intentHistory.length - 1 : Math.max(0, historyIndex - 1);
+        setHistoryIndex(newIndex);
+        setValue(intentHistory[newIndex] ?? '');
+      } else if (key.downArrow) {
+        if (historyIndex === null || historyIndex === intentHistory.length - 1) return;
+        const newIndex = historyIndex + 1;
+        if (newIndex >= intentHistory.length) {
+          setHistoryIndex(null);
+          setValue('');
+        } else {
+          setHistoryIndex(newIndex);
+          setValue(intentHistory[newIndex] ?? '');
+        }
+      }
+    },
+    { isActive: !locked },
+  );
+
+  const handleChange = (val: string) => {
+    setValue(val);
+    setHistoryIndex(null);
+  };
 
   const handleSubmit = (val: string) => {
     const trimmed = val.trim();
     if (!trimmed) return;
     setValue('');
+    setHistoryIndex(null);
 
     if (trimmed.startsWith('/')) {
       const [rawCmd = '', ...rest] = trimmed.slice(1).split(' ');
@@ -87,7 +126,7 @@ export function IncantationBar({ locked, onSubmit, onCommand, activeCount }: Inc
                 <Text>{chalk.hex(GOLD)('›')}</Text>
                 <TextInput
                   value={value}
-                  onChange={setValue}
+                  onChange={handleChange}
                   onSubmit={handleSubmit}
                   placeholder="a REST API to manage users… or /command"
                 />
@@ -103,6 +142,12 @@ export function IncantationBar({ locked, onSubmit, onCommand, activeCount }: Inc
                 <Text>{chalk.hex(GOLD)('[/]')}</Text>
                 <Text color="gray"> commands</Text>
               </Text>
+              {intentHistory.length > 0 && (
+                <Text color="gray" dimColor>
+                  <Text>{chalk.hex(GOLD)('[↑/↓]')}</Text>
+                  <Text color="gray"> history</Text>
+                </Text>
+              )}
               {activeCount !== undefined && activeCount > 0 && (
                 <Text color="yellow">⚙ {String(activeCount)} active</Text>
               )}

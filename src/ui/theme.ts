@@ -7,7 +7,7 @@ export type CompanionState = 'idle' | 'thinking' | 'forging' | 'error' | 'done';
 export const BRAND_COLOR = 'yellow' as const; // Ink named color (used as prop)
 export const GOLD = '#C8A415' as const; // amber/gold — active, focus
 export const COPPER = '#B87333' as const; // copper/ember — borders, structure
-export const BRAND_NAME = "Lun'Atar" as const;
+export const BRAND_NAME = "Lun'Ira" as const;
 export const BRAND_TAGLINE = 'intent → code' as const;
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────

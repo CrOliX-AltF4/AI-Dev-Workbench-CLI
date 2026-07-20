@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ciYml, lunatarConfig, readmeMd } from '../../src/init/templates/core.js';
+import { ciYml, luniraConfig, readmeMd } from '../../src/init/templates/core.js';
 import { buildGuidance } from '../../src/init/scaffolder.js';
 
 describe('ciYml', () => {
@@ -10,9 +10,9 @@ describe('ciYml', () => {
   });
 });
 
-describe('lunatarConfig', () => {
+describe('luniraConfig', () => {
   it('returns valid JSON with skills and plugins sections', () => {
-    const raw = lunatarConfig();
+    const raw = luniraConfig();
     const parsed = JSON.parse(raw) as unknown;
     expect(parsed).toMatchObject({
       skills: expect.any(Object) as unknown,
@@ -21,7 +21,7 @@ describe('lunatarConfig', () => {
   });
 
   it('pre-enables typescript-strict and conventional-commits skills', () => {
-    const parsed = JSON.parse(lunatarConfig()) as { skills: { all: string[] } };
+    const parsed = JSON.parse(luniraConfig()) as { skills: { all: string[] } };
     expect(parsed.skills.all).toContain('typescript-strict');
     expect(parsed.skills.all).toContain('conventional-commits');
   });
@@ -33,9 +33,9 @@ describe('readmeMd', () => {
     expect(readme).toContain('# my-project');
   });
 
-  it('includes lunatar run usage', () => {
+  it('includes lunira run usage', () => {
     const readme = readmeMd('my-project', 'cli');
-    expect(readme).toContain('lunatar run');
+    expect(readme).toContain('lunira run');
   });
 });
 
@@ -45,13 +45,13 @@ describe('buildGuidance', () => {
     expect(msg).toContain('cd my-proj');
   });
 
-  it('mentions lunatar setup', () => {
+  it('mentions lunira setup', () => {
     const msg = buildGuidance('my-proj', 'cli');
-    expect(msg).toContain('lunatar setup');
+    expect(msg).toContain('lunira setup');
   });
 
-  it('mentions lunatar run', () => {
+  it('mentions lunira run', () => {
     const msg = buildGuidance('my-proj', 'cli');
-    expect(msg).toContain('lunatar run');
+    expect(msg).toContain('lunira run');
   });
 });

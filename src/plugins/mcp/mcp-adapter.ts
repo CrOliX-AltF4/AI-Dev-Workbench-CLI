@@ -97,7 +97,7 @@ class McpClient {
     await this.request('initialize', {
       protocolVersion: '2024-11-05',
       capabilities: {},
-      clientInfo: { name: 'lunatar', version: '1.0.1' },
+      clientInfo: { name: 'lunira', version: '1.0.1' },
     });
     this.write({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} });
   }

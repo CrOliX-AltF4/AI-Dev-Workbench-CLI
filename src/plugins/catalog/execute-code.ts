@@ -43,7 +43,7 @@ export const executeCodePlugin: Plugin = {
   },
   async handler(input, context): Promise<string> {
     const { file, args = [], timeoutMs = 10_000 } = input as ExecuteCodeInput;
-    const tmpFile = join(tmpdir(), `lunatar-exec-${randomUUID()}-${basename(file)}`);
+    const tmpFile = join(tmpdir(), `lunira-exec-${randomUUID()}-${basename(file)}`);
 
     try {
       await copyFile(file, tmpFile);
